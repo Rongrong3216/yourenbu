@@ -91,7 +91,18 @@ const FriendDetail = (() => {
     } else if (activeTab === 'gifts') {
       await renderGifts(el);
     } else if (activeTab === 'prefs') {
-      el.innerHTML = `<div class="form-group"><label>偏好与雷区</label><div style="white-space:pre-wrap;">${YB.esc(friend.preferences || '（还没记录）')}</div></div>`;
+      el.innerHTML = `
+        <div style="padding:16px;">
+          <div style="margin-bottom:16px;">
+            <div style="font-weight:600;margin-bottom:6px;color:var(--accent);">💚 喜爱</div>
+            <div style="white-space:pre-wrap;font-size:14px;line-height:1.6;">${YB.esc(friend.likes || friend.preferences || '（还没记录）')}</div>
+          </div>
+          <div>
+            <div style="font-weight:600;margin-bottom:6px;color:var(--danger);">🚫 雷区</div>
+            <div style="white-space:pre-wrap;font-size:14px;line-height:1.6;">${YB.esc(friend.dislikes || '（还没记录）')}</div>
+          </div>
+        </div>
+      `;
     }
   }
 

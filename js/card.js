@@ -40,7 +40,7 @@ const Card = (() => {
     const lastGift = myGifts[0];
 
     const known = YB.calcKnownDuration(f.known_anniversary);
-    const prefFirst = (f.preferences || '').split('；')[0] || (f.preferences || '').slice(0, 30);
+    const prefFirst = (f.likes || f.preferences || '').split('；')[0] || (f.likes || f.preferences || '').slice(0, 30);
 
     stage.innerHTML = `
       <div class="flip-card" id="flipCard">

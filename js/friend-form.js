@@ -22,7 +22,8 @@ const FriendForm = (() => {
         <div class="form-group"><label>怎么认识的</label><input id="fMet" value="${YB.esc(f.how_we_met || '')}"></div>
         <div class="form-group"><label>认识纪念日</label><input type="date" id="fKnown" value="${YB.esc(f.known_anniversary || '')}"></div>
         <div class="form-group"><label>标签（逗号分隔）</label><input id="fTags" value="${YB.esc((f.tags || []).join(','))}"></div>
-        <div class="form-group"><label>偏好与雷区</label><textarea id="fPrefs">${YB.esc(f.preferences || '')}</textarea></div>
+        <div class="form-group"><label>喜爱（口味、爱好、喜欢的礼物类型）</label><textarea id="fLikes">${YB.esc(f.likes || (f.preferences && f.preferences.includes('；') ? '' : f.preferences) || '')}</textarea></div>
+        <div class="form-group"><label>雷区（别送什么、别聊什么）</label><textarea id="fDislikes">${YB.esc(f.dislikes || '')}</textarea></div>
 
         ${isEdit ? `<div style="padding:16px;"><button class="btn danger block" id="delFriendBtn">删除这个朋友</button></div>` : ''}
       </div>
@@ -44,7 +45,8 @@ const FriendForm = (() => {
         how_we_met: document.getElementById('fMet').value.trim(),
         known_anniversary: document.getElementById('fKnown').value,
         tags: document.getElementById('fTags').value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
-        preferences: document.getElementById('fPrefs').value,
+        likes: document.getElementById('fLikes').value.trim(),
+        dislikes: document.getElementById('fDislikes').value.trim(),
         updated_at: YB.nowISO()
       };
       if (!data.created_at) {
