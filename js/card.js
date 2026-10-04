@@ -73,7 +73,7 @@ const Card = (() => {
           <div class="enter-detail-btn" id="enterDetailBtn">查看完整档案 →</div>
         </div>
       </div>
-      <div class="swipe-hint">‹ 左右滑动切换 · 点卡片翻面 ›</div>
+      <div class="swipe-hint" style="${f.id && f.id.startsWith('sample_') ? '' : 'display:none;'}">‹ 左右滑动切换 · 点卡片翻面 ›</div>
     `;
 
     const card = document.getElementById('flipCard');
