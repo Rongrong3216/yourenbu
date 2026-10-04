@@ -94,9 +94,8 @@ const Home = (() => {
     }
     bellBtn.addEventListener('click', expandReminders);
 
-    const pageEl = container.querySelector('.page');
-    pageEl.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
-    pageEl.addEventListener('touchmove', (e) => {
+    remindersBox.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    remindersBox.addEventListener('touchmove', (e) => {
       const dy = e.touches[0].clientY - touchStartY;
       if (dy < -60 && remindersBox.style.maxHeight !== '0') collapseReminders();
       else if (dy > 60 && remindersBox.style.maxHeight === '0') expandReminders();
