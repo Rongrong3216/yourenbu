@@ -29,10 +29,6 @@ const FriendDetail = (() => {
         </div>
 
         <div id="detailTabContent" style="margin-top:16px;"></div>
-
-        <div style="padding:16px;">
-          <button class="btn block ghost" id="markContactBtn">✓ 标记今天联系过</button>
-        </div>
       </div>
 
       <div class="bottom-tabbar" style="position:fixed;">
@@ -46,14 +42,6 @@ const FriendDetail = (() => {
     container.querySelectorAll('#detailTabContent').forEach(el => {});
     container.querySelectorAll('.bottom-tabbar .tab[data-tab]').forEach(t => {
       t.addEventListener('click', () => { activeTab = t.dataset.tab; render(container, id, onBack); });
-    });
-
-    document.getElementById('markContactBtn').addEventListener('click', async () => {
-      friend.last_contact_at = YB.nowISO();
-      await DB.put('friends', friend);
-      Sync.markLocalModified();
-      Sync.schedulePush();
-      render(container, id, onBack);
     });
 
     await renderTab();

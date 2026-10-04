@@ -70,6 +70,7 @@ const Card = (() => {
           ${prefFirst ? `<div class="back-block"><div class="lbl">💝 偏好</div>${YB.esc(prefFirst)}</div>` : ''}
           ${lastGift ? `<div class="back-block"><div class="lbl">🎁 最近送礼</div>${YB.esc(lastGift.gift_name)} · ${YB.esc(lastGift.date)}</div>` : ''}
           ${known ? `<div class="back-block"><div class="lbl">📅 ${YB.esc(known)}</div></div>` : ''}
+          <button class="btn ghost block" id="markContactBtn" style="margin-top:8px;">✓ 标记今天联系过</button>
           <div class="enter-detail-btn" id="enterDetailBtn">查看完整档案 →</div>
         </div>
       </div>
@@ -80,7 +81,7 @@ const Card = (() => {
 
     // 点卡片翻面
     card.addEventListener('click', (e) => {
-      if (e.target.id === 'quickNoteBtn' || e.target.id === 'enterDetailBtn') return;
+      if (e.target.id === 'quickNoteBtn' || e.target.id === 'enterDetailBtn' || e.target.id === 'markContactBtn') return;
       card.classList.toggle('flipped');
     });
 
@@ -94,6 +95,16 @@ const Card = (() => {
     document.getElementById('enterDetailBtn').addEventListener('click', (e) => {
       e.stopPropagation();
       App.navigate('detail', { id: f.id });
+    });
+
+    // 标记今天联系过
+    document.getElementById('markContactBtn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      f.last_contact_at = YB.nowISO();
+      await DB.put('friends', f);
+      Sync.markLocalModified();
+      Sync.schedulePush();
+      draw();
     });
 
     // 左右滑
