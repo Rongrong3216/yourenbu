@@ -1,0 +1,49 @@
+/* pin-lock.css —— PIN 锁屏 */
+
+.pin-lock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.pin-logo { font-size: 48px; margin-bottom: 12px; }
+.pin-title { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+.pin-sub { font-size: 14px; color: var(--ink-light); margin-bottom: 32px; }
+.pin-dots { display: flex; gap: 16px; margin-bottom: 16px; }
+.pin-dots span {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  transition: all 0.2s;
+}
+.pin-dots span.filled { background: var(--accent); }
+.pin-msg {
+  height: 20px;
+  color: var(--danger);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.pin-msg.shake { animation: shake 0.4s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 72px);
+  gap: 16px;
+}
+.pin-key {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.pin-key:active { background: var(--bg); }
+.pin-key.empty { background: transparent; box-shadow: none; }

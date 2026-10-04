@@ -1,0 +1,122 @@
+/* card-flip.css —— 翻卡 3D 动画 */
+
+.card-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  padding: 20px;
+  position: relative;
+}
+
+.flip-card {
+  width: 100%;
+  max-width: 340px;
+  height: 480px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: pointer;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.flip-card.flipped { transform: rotateY(180deg); }
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--paper);
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(62, 50, 41, 0.15);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.flip-face.back { transform: rotateY(180deg); }
+
+/* 正面 */
+.face-front .avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 28px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 12px;
+  font-weight: 600;
+}
+.face-front .name { text-align: center; font-size: 22px; font-weight: 600; }
+.face-front .tags { text-align: center; margin: 8px 0 16px; }
+.tag-pill {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink-light);
+  margin: 0 3px;
+}
+.face-front .stats {
+  display: flex; justify-content: space-around;
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+.stat { text-align: center; }
+.stat .num { font-size: 18px; font-weight: 600; color: var(--accent-dark); }
+.stat .lbl { font-size: 11px; color: var(--ink-light); margin-top: 2px; }
+
+.face-front .moment-snippet {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--ink-light);
+  font-style: italic;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.face-front .quick-note-btn {
+  margin: 12px auto 0;
+  display: block;
+}
+
+/* 反面 */
+.face-back { justify-content: space-between; }
+.face-back .back-header { text-align: center; margin-bottom: 16px; }
+.face-back .back-header .name { font-size: 20px; font-weight: 600; }
+.back-block {
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.back-block .lbl { font-size: 11px; color: var(--ink-light); margin-bottom: 4px; }
+.enter-detail-btn {
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: 600;
+  margin-top: auto;
+}
+
+/* 滑动提示 */
+.swipe-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-light);
+  opacity: 0.6;
+}

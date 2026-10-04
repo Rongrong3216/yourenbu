@@ -1,0 +1,76 @@
+// sample-data.js —— 首次启动的示例朋友
+
+const SampleData = (() => {
+  async function seedIfEmpty() {
+    const friends = await DB.getAll('friends');
+    if (friends.length > 0) return;
+
+    const now = YB.nowISO();
+    const amei = {
+      id: 'sample_amei',
+      name: '林小满',
+      nickname: '阿May',
+      gender: 'female',
+      birthday: '1998-05-12',
+      contact: '微信 amey_lin',
+      occupation: '幼儿园老师',
+      how_we_met: '大学室友，上下铺睡了四年',
+      known_anniversary: '2017-09-15',
+      custom_dates: [{ label: '她妈妈生日', date: '1968-03-20' }],
+      tags: ['大学室友', '闺蜜'],
+      preferences: '喜欢吃辣、不吃香菜；送花别送菊花；聊她学生的事她能讲一小时。',
+      avatar: '',
+      last_contact_at: new Date(Date.now() - 23 * 86400000).toISOString(),
+      created_at: now,
+      updated_at: now
+    };
+    const laowang = {
+      id: 'sample_laowang',
+      name: '王浩',
+      nickname: '老王',
+      gender: 'male',
+      birthday: '1995-11-02',
+      contact: '微信 laowang_dev',
+      occupation: '程序员',
+      how_we_met: '第一份工作的同事，一起加班扛过项目上线',
+      known_anniversary: '2020-03-01',
+      custom_dates: [],
+      tags: ['前同事', '球友'],
+      preferences: '周末爱打球；别跟他聊加班；送数码周边不会错。',
+      avatar: '',
+      last_contact_at: new Date(Date.now() - 120 * 86400000).toISOString(),
+      created_at: now,
+      updated_at: now
+    };
+
+    await DB.put('friends', amei);
+    await DB.put('friends', laowang);
+
+    await DB.put('moments', {
+      id: 'm_001',
+      friend_id: 'sample_amei',
+      date: YB.todayStr(),
+      content: '示例：她听说我搬家，二话不说打车过来帮我收拾了一整天，晚上还请我吃了火锅。',
+      created_at: now
+    });
+
+    await DB.put('gifts', {
+      id: 'g_001',
+      friend_id: 'sample_amei',
+      date: '2025-05-12',
+      gift_name: '祖玛珑鼠尾草与海盐香水 30ml',
+      cost: 620,
+      reaction: '她超喜欢，说正好是她想试的味道'
+    });
+    await DB.put('gifts', {
+      id: 'g_002',
+      friend_id: 'sample_laowang',
+      date: '2025-11-02',
+      gift_name: '罗技 MX Master 3S 鼠标',
+      cost: 799,
+      reaction: '他说手感很好，用了一整年还在夸'
+    });
+  }
+
+  return { seedIfEmpty };
+})();

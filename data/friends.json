@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "version": 1,
+    "exportedAt": "2026-10-04",
+    "pinHash": ""
+  },
+  "friends": [
+    {
+      "id": "sample_amei",
+      "name": "林小满",
+      "nickname": "阿May",
+      "gender": "female",
+      "birthday": "1998-05-12",
+      "contact": "微信 amey_lin",
+      "occupation": "幼儿园老师",
+      "how_we_met": "大学室友，上下铺睡了四年",
+      "known_anniversary": "2017-09-15",
+      "custom_dates": [
+        { "label": "她妈妈生日", "date": "1968-03-20" }
+      ],
+      "tags": ["大学室友", "闺蜜"],
+      "preferences": "喜欢吃辣、不吃香菜；送花别送菊花；聊她学生的事她能讲一小时。",
+      "avatar": "",
+      "last_contact_at": "2026-09-11T00:00:00Z",
+      "created_at": "2026-10-04T00:00:00Z",
+      "updated_at": "2026-10-04T00:00:00Z"
+    },
+    {
+      "id": "sample_laowang",
+      "name": "王浩",
+      "nickname": "老王",
+      "gender": "male",
+      "birthday": "1995-11-02",
+      "contact": "微信 laowang_dev",
+      "occupation": "程序员",
+      "how_we_met": "第一份工作的同事，一起加班扛过项目上线",
+      "known_anniversary": "2020-03-01",
+      "custom_dates": [],
+      "tags": ["前同事", "球友"],
+      "preferences": "周末爱打球；别跟他聊加班；送数码周边不会错。",
+      "avatar": "",
+      "last_contact_at": "2026-06-15T00:00:00Z",
+      "created_at": "2026-10-04T00:00:00Z",
+      "updated_at": "2026-10-04T00:00:00Z"
+    }
+  ],
+  "moments": [
+    {
+      "id": "m_001",
+      "friend_id": "sample_amei",
+      "date": "2026-09-11",
+      "content": "她听说我搬家，二话不说打车过来帮我收拾了一整天，晚上还请我吃了火锅。",
+      "created_at": "2026-09-11T20:30:00Z"
+    }
+  ],
+  "gifts": [
+    {
+      "id": "g_001",
+      "friend_id": "sample_amei",
+      "date": "2025-05-12",
+      "gift_name": "祖玛珑鼠尾草与海盐香水 30ml",
+      "cost": 620,
+      "reaction": "她超喜欢，说正好是她想试的味道"
+    },
+    {
+      "id": "g_002",
+      "friend_id": "sample_laowang",
+      "date": "2025-11-02",
+      "gift_name": "罗技 MX Master 3S 鼠标",
+      "cost": 799,
+      "reaction": "他说手感很好，用了一整年还在夸"
+    }
+  ]
+}

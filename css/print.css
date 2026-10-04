@@ -1,0 +1,15 @@
+/* print.css —— PDF 打印样式 */
+
+@media print {
+  .bottom-tabbar, .fab, .topbar, .reminders, .swipe-hint { display: none !important; }
+  body { background: #fff; }
+  .page { padding: 0; }
+  .print-friend {
+    page-break-inside: avoid;
+    margin-bottom: 24px;
+    padding: 16px;
+    border-bottom: 1px solid #ccc;
+  }
+  .print-friend h2 { font-size: 18px; margin-bottom: 8px; }
+  .print-friend h4 { margin: 8px 0 4px; color: #666; }
+}
