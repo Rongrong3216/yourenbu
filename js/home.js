@@ -46,7 +46,10 @@ const Home = (() => {
     container.innerHTML = `
       <div class="page">
         <div class="topbar">
-          <div class="greet">今天也要好好维系感情哦</div>
+          <div>
+            <div style="font-size:22px;font-weight:700;letter-spacing:1px;">友人簿</div>
+            <div style="font-size:12px;color:var(--ink-light);margin-top:2px;">今天也要好好维系感情哦</div>
+          </div>
           <div class="top-actions">
             <span class="sync-dot" id="syncDot"></span>
             <button class="icon-btn" onclick="App.navigate('settings')">⚙️</button>
