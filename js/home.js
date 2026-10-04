@@ -52,11 +52,12 @@ const Home = (() => {
           </div>
           <div class="top-actions">
             <span class="sync-dot" id="syncDot"></span>
+            <button class="icon-btn" id="bellBtn" style="display:none;" title="查看提醒">🔔</button>
             <button class="icon-btn" onclick="App.navigate('settings')">⚙️</button>
           </div>
         </div>
 
-        <div class="reminders">
+        <div class="reminders" id="remindersBox">
           <h3>🔔 本周该上心的</h3>
           ${reminders.length === 0 ? '<div style="font-size:13px;color:var(--ink-light);padding:8px 0;">最近没什么紧急的，去翻翻卡片吧</div>' : ''}
           ${reminders.map(r => `<div class="reminder-item ${r.warn ? 'warn' : ''}" data-id="${r.friend.id}">
@@ -73,6 +74,33 @@ const Home = (() => {
     container.querySelectorAll('.reminder-item').forEach(el => {
       el.addEventListener('click', () => onOpenDetail({ id: el.dataset.id }));
     });
+
+    // 上滑折叠提醒条 / 下滑展开
+    const remindersBox = document.getElementById('remindersBox');
+    const bellBtn = document.getElementById('bellBtn');
+    let touchStartY = 0;
+    function collapseReminders() {
+      remindersBox.style.transition = 'all 0.3s ease';
+      remindersBox.style.maxHeight = '0';
+      remindersBox.style.opacity = '0';
+      remindersBox.style.overflow = 'hidden';
+      bellBtn.style.display = '';
+    }
+    function expandReminders() {
+      remindersBox.style.transition = 'all 0.3s ease';
+      remindersBox.style.maxHeight = '500px';
+      remindersBox.style.opacity = '1';
+      bellBtn.style.display = 'none';
+    }
+    bellBtn.addEventListener('click', expandReminders);
+
+    const pageEl = container.querySelector('.page');
+    pageEl.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    pageEl.addEventListener('touchmove', (e) => {
+      const dy = e.touches[0].clientY - touchStartY;
+      if (dy < -60 && remindersBox.style.maxHeight !== '0') collapseReminders();
+      else if (dy > 60 && remindersBox.style.maxHeight === '0') expandReminders();
+    }, { passive: true });
 
     Card.render(document.getElementById('cardStage'), sortedFriends(), onOpenDetail);
   }
