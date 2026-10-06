@@ -1,6 +1,6 @@
 // sw.js —— Service Worker，离线缓存（网络优先，保证总是最新代码）
 
-const CACHE = 'yourenbu-v2';
+const CACHE = 'yourenbu-v3';
 const ASSETS = [
   './',
   './index.html',
