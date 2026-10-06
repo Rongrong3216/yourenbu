@@ -39,11 +39,20 @@ const Card = (() => {
       const markBtn = card.querySelector('[data-btn="mark"]');
       if (markBtn) markBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        f.last_contact_at = YB.nowISO();
+        const alreadyMarked = f.last_contact_at && f.last_contact_at.slice(0, 10) === YB.todayStr();
+        if (alreadyMarked) {
+          if (!confirm('取消今天的联系标记？')) return;
+          f.last_contact_at = null;
+        } else {
+          f.last_contact_at = YB.nowISO();
+        }
         await DB.put('friends', f);
         Sync.markLocalModified();
         Sync.schedulePush();
-        render(container, list, openDetail);
+        // 只更新按钮状态，不重新渲染（避免翻回正面）
+        const nowMarked = f.last_contact_at && f.last_contact_at.slice(0, 10) === YB.todayStr();
+        markBtn.style.opacity = nowMarked ? '0.4' : '';
+        markBtn.textContent = nowMarked ? '✓ 今天已联系' : '✓ 标记今天联系过';
       });
     });
   }
@@ -59,6 +68,7 @@ const Card = (() => {
     const lastGift = myGifts[0];
     const known = YB.calcKnownDuration(f.known_anniversary);
     const prefFirst = (f.likes || f.preferences || '').split('；')[0] || (f.likes || f.preferences || '').slice(0, 30);
+    const isMarkedToday = f.last_contact_at && f.last_contact_at.slice(0, 10) === YB.todayStr();
 
     return `
       <div class="card-snap">
@@ -88,8 +98,8 @@ const Card = (() => {
             ${prefFirst ? `<div class="back-block"><div class="lbl">💝 偏好</div>${YB.esc(prefFirst)}</div>` : ''}
             ${lastGift ? `<div class="back-block"><div class="lbl">🎁 最近送礼</div>${YB.esc(lastGift.gift_name)} · ${YB.esc(lastGift.date)}</div>` : ''}
             ${known ? `<div class="back-block"><div class="lbl">📅 ${YB.esc(known)}</div></div>` : ''}
-            <button class="btn ghost block" data-btn="mark" style="margin-top:8px;">✓ 标记今天联系过</button>
-            <div class="enter-detail-btn" data-btn="detail">查看完整档案 →</div>
+            <button class="btn ghost block" data-btn="mark" style="margin-top:auto;${isMarkedToday ? 'opacity:0.4;' : ''}">${isMarkedToday ? '✓ 今天已联系' : '✓ 标记今天联系过'}</button>
+            <div class="enter-detail-btn" data-btn="detail" style="margin-top:6px;">查看完整档案 →</div>
           </div>
         </div>
       </div>
