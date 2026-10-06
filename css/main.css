@@ -20,12 +20,13 @@ html, body {
   height: 100%;
   background: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", "微软雅黑", sans-serif;
   font-size: 15px;
   overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
 }
 
-#app { height: 100%; display: flex; flex-direction: column; }
+#app { height: 100%; height: 100dvh; display: flex; flex-direction: column; }
 
 /* ---- 通用按钮 ---- */
 .btn {
@@ -37,6 +38,9 @@ html, body {
   cursor: pointer;
   background: var(--accent);
   color: #fff;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
 }
 .btn:active { opacity: 0.85; }
 .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
@@ -133,8 +137,10 @@ html, body {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--paper);
-  font-size: 15px;
+  font-size: 16px;
   font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .form-group textarea { min-height: 80px; resize: vertical; }
 
