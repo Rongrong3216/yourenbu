@@ -1,4 +1,4 @@
-// quick-note.js —— 快速记一笔温情小事
+// quick-note.js —— 快速记一笔（小事 / 承诺）
 
 const QuickNote = (() => {
   function open(friend, onSaved) {
@@ -7,9 +7,23 @@ const QuickNote = (() => {
     mask.innerHTML = `
       <div class="modal-sheet">
         <h3>记一笔 · ${YB.esc(friend.nickname || friend.name)}</h3>
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <div id="typeMoment" style="flex:1;text-align:center;padding:10px;border:1px solid var(--accent);border-radius:10px;cursor:pointer;background:rgba(195,141,158,0.1);">
+            <div style="font-size:20px;">📝</div>
+            <div style="font-size:13px;margin-top:4px;">小事</div>
+          </div>
+          <div id="typePromise" style="flex:1;text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;">
+            <div style="font-size:20px;">📌</div>
+            <div style="font-size:13px;margin-top:4px;">承诺</div>
+          </div>
+        </div>
         <div class="form-group">
           <label>日期</label>
           <input type="date" id="qnDate" value="${YB.todayStr()}">
+        </div>
+        <div class="form-group" id="dueGroup" style="display:none;">
+          <label>截止日期（可选）</label>
+          <input type="date" id="qnDue">
         </div>
         <div class="form-group">
           <label>写点什么</label>
@@ -23,20 +37,55 @@ const QuickNote = (() => {
     `;
     document.body.appendChild(mask);
 
-    mask.addEventListener('click', (e) => { if (e.target === mask) mask.remove(); });
-    document.getElementById('qnCancel').addEventListener('click', () => mask.remove());
+    let currentType = 'moment';
 
-    document.getElementById('qnSave').addEventListener('click', async () => {
-      const content = document.getElementById('qnContent').value.trim();
-      const date = document.getElementById('qnDate').value;
+    const typeMoment = mask.querySelector('#typeMoment');
+    const typePromise = mask.querySelector('#typePromise');
+    const dueGroup = mask.querySelector('#dueGroup');
+
+    function switchType(t) {
+      currentType = t;
+      if (t === 'moment') {
+        typeMoment.style.background = 'rgba(195,141,158,0.1)';
+        typeMoment.style.borderColor = 'var(--accent)';
+        typePromise.style.background = '';
+        typePromise.style.borderColor = 'var(--line)';
+        dueGroup.style.display = 'none';
+      } else {
+        typePromise.style.background = 'rgba(195,141,158,0.1)';
+        typePromise.style.borderColor = 'var(--accent)';
+        typeMoment.style.background = '';
+        typeMoment.style.borderColor = 'var(--line)';
+        dueGroup.style.display = 'block';
+      }
+    }
+
+    typeMoment.addEventListener('click', () => switchType('moment'));
+    typePromise.addEventListener('click', () => switchType('promise'));
+
+    mask.addEventListener('click', (e) => { if (e.target === mask) mask.remove(); });
+    mask.querySelector('#qnCancel').addEventListener('click', () => mask.remove());
+
+    mask.querySelector('#qnSave').addEventListener('click', async () => {
+      const content = mask.querySelector('#qnContent').value.trim();
+      const date = mask.querySelector('#qnDate').value;
       if (!content) return alert('写点什么再保存');
-      await DB.put('moments', {
+
+      const data = {
         id: YB.genId('m'),
         friend_id: friend.id,
         date,
         content,
+        type: currentType,
         created_at: YB.nowISO()
-      });
+      };
+      if (currentType === 'promise') {
+        const due = mask.querySelector('#qnDue').value;
+        if (due) data.due_date = due;
+        data.done = false;
+      }
+
+      await DB.put('moments', data);
       friend.last_contact_at = new Date(date).toISOString();
       await DB.put('friends', friend);
       Sync.markLocalModified();

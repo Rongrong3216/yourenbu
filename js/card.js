@@ -63,9 +63,10 @@ const Card = (() => {
     const bg = YB.colorHash(f.name);
     const initial = (f.nickname || f.name).charAt(0);
     const myMoments = allMoments.filter(m => m.friend_id === f.id).sort((a, b) => b.date.localeCompare(a.date));
-    const lastMoment = myMoments[0];
+    const lastMoment = myMoments.find(m => m.type !== 'promise');
     const myGifts = allGifts.filter(g => g.friend_id === f.id).sort((a, b) => b.date.localeCompare(a.date));
     const lastGift = myGifts[0];
+    const myPromises = myMoments.filter(m => m.type === 'promise' && !m.done);
     const known = YB.calcKnownDuration(f.known_anniversary);
     const prefFirst = (f.likes || f.preferences || '').split('；')[0] || (f.likes || f.preferences || '').slice(0, 30);
     const isMarkedToday = f.last_contact_at && f.last_contact_at.slice(0, 10) === YB.todayStr();
@@ -87,7 +88,7 @@ const Card = (() => {
                 <div class="lbl">上次联系</div>
               </div>
             </div>
-            ${lastMoment ? `<div class="moment-snippet">"${YB.esc(lastMoment.content.slice(0, 50))}${lastMoment.content.length > 50 ? '…' : ''}"</div>` : '<div class="moment-snippet"></div>'}
+            ${lastMoment ? `<div class="moment-snippet">"${YB.esc(lastMoment.content.slice(0, 50))}${lastMoment.content.length > 50 ? '…' : ''}"</div>` : ''}
             <button class="btn ghost quick-note-btn" data-btn="note">+ 记一笔</button>
           </div>
           <div class="flip-face back face-back">
@@ -98,6 +99,7 @@ const Card = (() => {
             </div>
             ${prefFirst ? `<div class="back-block"><div class="lbl">💝 偏好</div>${YB.esc(prefFirst)}</div>` : ''}
             ${lastGift ? `<div class="back-block"><div class="lbl">🎁 最近送礼</div>${YB.esc(lastGift.gift_name)} · ${YB.esc(lastGift.date)}</div>` : ''}
+            ${myPromises.length > 0 ? `<div class="back-block"><div class="lbl">📌 待履行承诺</div>${myPromises.slice(0,2).map(p => `<div style="margin-top:4px;">• ${YB.esc(p.content)}${p.due_date ? ` <span style="color:var(--danger);font-size:12px;">（${p.due_date}前）</span>` : ''}</div>`).join('')}</div>` : ''}
             <button class="btn ghost block" data-btn="mark" style="margin-top:auto;${isMarkedToday ? 'opacity:0.4;' : ''}">${isMarkedToday ? '✓ 今天已联系' : '✓ 标记今天联系过'}</button>
             <div class="enter-detail-btn" data-btn="detail" style="margin-top:6px;">查看完整档案 →</div>
           </div>
