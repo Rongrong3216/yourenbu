@@ -114,7 +114,12 @@ const FriendList = (() => {
         const k = keyword.toLowerCase();
         list = list.filter(f => (f.name + (f.nickname || '')).toLowerCase().includes(k));
       }
-      list.sort((a, b) => (a.nickname || a.name).localeCompare(b.nickname || b.name, 'zh'));
+      list.sort((a, b) => {
+        const sa = a.sortOrder ?? 9999;
+        const sb = b.sortOrder ?? 9999;
+        if (sa !== sb) return sa - sb;
+        return (a.nickname || a.name).localeCompare(b.nickname || b.name, 'zh');
+      });
 
       document.getElementById('flBody').innerHTML = list.map(f => {
         const bd = YB.daysUntilBirthday(f.birthday);
@@ -136,8 +141,101 @@ const FriendList = (() => {
       }).join('') || '<div style="text-align:center;color:var(--ink-light);padding:40px;">没有匹配的朋友</div>';
 
       container.querySelectorAll('.fl-row').forEach(el => {
-        el.addEventListener('click', () => onOpen(el.dataset.id));
+        el.addEventListener('click', () => {
+          if (justDragged) return;
+          onOpen(el.dataset.id);
+        });
       });
+
+      // 长按拖动排序
+      let longPressTimer = null;
+      let draggingRow = null;
+      let touchStartY = 0;
+      let justDragged = false;
+
+      container.querySelectorAll('.fl-row').forEach(row => {
+        row.addEventListener('touchstart', (e) => {
+          if (draggingRow) return;
+          touchStartY = e.touches[0].clientY;
+          longPressTimer = setTimeout(() => startDrag(row), 500);
+        }, { passive: true });
+
+        row.addEventListener('touchmove', (e) => {
+          if (Math.abs(e.touches[0].clientY - touchStartY) > 10) {
+            clearTimeout(longPressTimer);
+          }
+        }, { passive: true });
+
+        row.addEventListener('touchend', () => clearTimeout(longPressTimer));
+      });
+
+      function startDrag(row) {
+        draggingRow = row;
+        row.style.opacity = '1';
+        row.style.transform = 'scale(1.03)';
+        row.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+        row.style.borderRadius = '12px';
+        row.style.zIndex = '100';
+        row.style.transition = 'transform 0.15s, box-shadow 0.15s';
+
+        // 其他行变半透明
+        container.querySelectorAll('.fl-row').forEach(r => {
+          if (r !== row) r.style.opacity = '0.6';
+        });
+
+        const onMove = (e) => {
+          const touch = e.touches[0];
+          const rows = [...container.querySelectorAll('.fl-row')];
+          const currentIdx = rows.indexOf(row);
+          const rowH = row.offsetHeight;
+          const dy = touch.clientY - touchStartY;
+          const steps = Math.round(dy / rowH);
+
+          if (steps !== 0) {
+            const targetIdx = currentIdx + steps;
+            if (targetIdx >= 0 && targetIdx < rows.length) {
+              const ref = rows[targetIdx];
+              if (steps > 0) {
+                container.querySelector('#flBody').insertBefore(row, ref.nextSibling);
+              } else {
+                container.querySelector('#flBody').insertBefore(row, ref);
+              }
+              touchStartY = touch.clientY;
+            }
+          }
+        };
+
+        const onEnd = () => {
+          row.style.opacity = '';
+          row.style.transform = '';
+          row.style.boxShadow = '';
+          row.style.borderRadius = '';
+          row.style.zIndex = '';
+          row.style.transition = '';
+          // 恢复其他行
+          container.querySelectorAll('.fl-row').forEach(r => r.style.opacity = '');
+          draggingRow = null;
+          justDragged = true;
+          setTimeout(() => { justDragged = false; }, 200);
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onEnd);
+          saveOrder();
+        };
+
+        document.addEventListener('touchmove', onMove, { passive: true });
+        document.addEventListener('touchend', onEnd);
+      }
+
+      async function saveOrder() {
+        const rows = container.querySelectorAll('.fl-row');
+        rows.forEach((row, i) => {
+          const f = friends.find(x => x.id === row.dataset.id);
+          if (f) f.sortOrder = i;
+        });
+        for (const f of friends) await DB.put('friends', f);
+        Sync.markLocalModified();
+        Sync.schedulePush();
+      }
     }
   }
 
