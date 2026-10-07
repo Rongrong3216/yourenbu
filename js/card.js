@@ -94,10 +94,10 @@ const Card = (() => {
             <div class="back-header">
               <div class="name">${YB.esc(f.nickname || f.name)}</div>
               <div>${(f.tags || []).slice(0, 2).map(t => `<span class="tag-pill">${YB.esc(t)}</span>`).join('')}</div>
+              ${known ? `<div style="margin-top:8px;font-size:13px;color:var(--ink-light);text-align:center;">📅 ${YB.esc(known)}</div>` : ''}
             </div>
             ${prefFirst ? `<div class="back-block"><div class="lbl">💝 偏好</div>${YB.esc(prefFirst)}</div>` : ''}
             ${lastGift ? `<div class="back-block"><div class="lbl">🎁 最近送礼</div>${YB.esc(lastGift.gift_name)} · ${YB.esc(lastGift.date)}</div>` : ''}
-            ${known ? `<div class="back-block"><div class="lbl">📅 ${YB.esc(known)}</div></div>` : ''}
             <button class="btn ghost block" data-btn="mark" style="margin-top:auto;${isMarkedToday ? 'opacity:0.4;' : ''}">${isMarkedToday ? '✓ 今天已联系' : '✓ 标记今天联系过'}</button>
             <div class="enter-detail-btn" data-btn="detail" style="margin-top:6px;">查看完整档案 →</div>
           </div>
