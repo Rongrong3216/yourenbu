@@ -13,10 +13,9 @@ const Settings = (() => {
 
     container.innerHTML = `
       <div class="page">
-        <div class="topbar">
-          <button class="icon-btn" onclick="window.__onSettingsBack()">‹ 返回</button>
+        <div class="topbar" style="position:relative;justify-content:center;">
+          <button class="icon-btn" onclick="window.__onSettingsBack()" style="position:absolute;left:16px;font-size:16px;">‹ 返回</button>
           <div style="font-size:16px;font-weight:600;">设置</div>
-          <div style="width:24px;"></div>
         </div>
 
         <div style="margin:0 16px 16px;background:var(--paper);border-radius:16px;padding:16px;box-shadow:var(--shadow);">

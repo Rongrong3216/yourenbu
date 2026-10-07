@@ -6,22 +6,40 @@ const FriendForm = (() => {
     const isEdit = !!f.id;
     window.__onFormDone = onDone;
 
+    const customRels = (await DB.getMeta('customRelations')) || [];
+    const presetRels = [{name:'家人',icon:'👨‍👩‍👧'},{name:'好友',icon:'💛'},{name:'同学',icon:'🎓'},{name:'同事',icon:'💼'}];
+    const allRels = [...presetRels, ...customRels];
+
     container.innerHTML = `
       <div class="page">
-        <div class="topbar">
-          <button class="icon-btn" onclick="window.__onFormDone()">‹ 取消</button>
+        <div class="topbar" style="position:relative;justify-content:center;">
+          <button class="icon-btn" onclick="window.__onFormDone()" style="position:absolute;left:16px;font-size:16px;">‹ 取消</button>
           <div style="font-size:16px;font-weight:600;">${isEdit ? '编辑朋友' : '新朋友'}</div>
-          <button class="icon-btn" id="saveFriendBtn">✓</button>
+          <button class="icon-btn" id="saveFriendBtn" style="position:absolute;right:16px;">✓</button>
         </div>
 
         <div class="form-group"><label>姓名 *</label><input id="fName" value="${YB.esc(f.name || '')}"></div>
         <div class="form-group"><label>昵称</label><input id="fNickname" value="${YB.esc(f.nickname || '')}"></div>
-        <div class="form-group"><label>生日 *</label><input type="date" id="fBirthday" value="${YB.esc(f.birthday || '')}"></div>
+        <div class="form-group"><label>生日</label><input type="date" id="fBirthday" value="${YB.esc(f.birthday || '')}"></div>
         <div class="form-group"><label>微信/电话</label><input id="fContact" value="${YB.esc(f.contact || '')}"></div>
         <div class="form-group"><label>职业</label><input id="fOccupation" value="${YB.esc(f.occupation || '')}"></div>
         <div class="form-group"><label>怎么认识的</label><input id="fMet" value="${YB.esc(f.how_we_met || '')}"></div>
         <div class="form-group"><label>认识纪念日</label><input type="date" id="fKnown" value="${YB.esc(f.known_anniversary || '')}"></div>
-        <div class="form-group"><label>标签（逗号分隔）</label><input id="fTags" value="${YB.esc((f.tags || []).join(','))}"></div>
+        <div class="form-group"><label>关系类型（可多选）</label>
+          <div id="relationPick" style="display:flex;gap:10px;flex-wrap:wrap;">
+            ${allRels.map(r => `
+              <div class="relation-opt" data-rel="${YB.esc(r.name)}" style="padding:10px 16px;border:1px solid var(--line);border-radius:12px;cursor:pointer;text-align:center;font-size:13px;${(f.relation||[]).includes(r.name) ? 'border-color:var(--accent);background:rgba(195,141,158,0.1);' : ''}">
+                <div style="font-size:20px;">${r.icon || '📌'}</div>
+                <div style="margin-top:4px;">${YB.esc(r.name)}</div>
+              </div>
+            `).join('')}
+            <div id="addRelBtn" style="padding:10px 16px;border:1px dashed var(--line);border-radius:12px;cursor:pointer;text-align:center;font-size:13px;color:var(--ink-light);">
+              <div style="font-size:20px;">＋</div>
+              <div style="margin-top:4px;">添加</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label>标签（逗号分隔，自由补充）</label><input id="fTags" value="${YB.esc((f.tags || []).join(','))}"></div>
         <div class="form-group"><label>喜爱（口味、爱好、喜欢的礼物类型）</label><textarea id="fLikes">${YB.esc(f.likes || (f.preferences && f.preferences.includes('；') ? '' : f.preferences) || '')}</textarea></div>
         <div class="form-group"><label>雷区（别送什么、别聊什么）</label><textarea id="fDislikes">${YB.esc(f.dislikes || '')}</textarea></div>
 
@@ -29,10 +47,53 @@ const FriendForm = (() => {
       </div>
     `;
 
+    // 关系类型点选
+    const pickedRel = new Set(f.relation || []);
+    document.querySelectorAll('.relation-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        const r = el.dataset.rel;
+        if (pickedRel.has(r)) { pickedRel.delete(r); el.style.borderColor = ''; el.style.background = ''; }
+        else { pickedRel.add(r); el.style.borderColor = 'var(--accent)'; el.style.background = 'rgba(195,141,158,0.1)'; }
+      });
+    });
+
+    // 自定义添加关系
+    document.getElementById('addRelBtn').addEventListener('click', () => {
+      // 自定义弹窗，不用浏览器原生 prompt
+      const mask = document.createElement('div');
+      mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
+      mask.innerHTML = `
+        <div style="background:var(--paper);border-radius:16px;padding:20px;width:100%;max-width:320px;">
+          <div style="font-weight:600;margin-bottom:16px;">添加关系类型</div>
+          <input id="newRelName" placeholder="关系名称，比如：球友、闺蜜" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;font-size:16px;">
+          <input id="newRelIcon" placeholder="选一个 emoji，比如 🏸" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;font-size:16px;">
+          <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button id="newRelCancel" style="padding:10px 16px;border:none;background:var(--bg);border-radius:10px;cursor:pointer;">取消</button>
+            <button id="newRelOk" style="padding:10px 16px;border:none;background:var(--accent);color:#fff;border-radius:10px;cursor:pointer;">确定</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(mask);
+      mask.querySelector('#newRelName').focus();
+
+      mask.querySelector('#newRelCancel').onclick = () => mask.remove();
+      mask.onclick = (e) => { if (e.target === mask) mask.remove(); };
+      mask.querySelector('#newRelOk').onclick = async () => {
+        const name = mask.querySelector('#newRelName').value.trim();
+        const icon = mask.querySelector('#newRelIcon').value.trim() || '📌';
+        if (!name) return;
+        const customRels = (await DB.getMeta('customRelations')) || [];
+        customRels.push({ name, icon });
+        await DB.setMeta('customRelations', customRels);
+        mask.remove();
+        render(container, params, onDone);
+      };
+    });
+
     document.getElementById('saveFriendBtn').addEventListener('click', async () => {
       const name = document.getElementById('fName').value.trim();
       const birthday = document.getElementById('fBirthday').value;
-      if (!name || !birthday) return alert('姓名和生日必填');
+      if (!name) return alert('姓名必填');
 
       const data = {
         ...f,
@@ -45,6 +106,7 @@ const FriendForm = (() => {
         how_we_met: document.getElementById('fMet').value.trim(),
         known_anniversary: document.getElementById('fKnown').value,
         tags: document.getElementById('fTags').value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
+        relation: [...pickedRel],
         likes: document.getElementById('fLikes').value.trim(),
         dislikes: document.getElementById('fDislikes').value.trim(),
         updated_at: YB.nowISO()
