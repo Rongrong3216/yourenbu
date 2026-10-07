@@ -20,7 +20,12 @@ const FriendForm = (() => {
 
         <div class="form-group"><label>姓名 *</label><input id="fName" value="${YB.esc(f.name || '')}"></div>
         <div class="form-group"><label>昵称</label><input id="fNickname" value="${YB.esc(f.nickname || '')}"></div>
-        <div class="form-group"><label>生日</label><input type="date" id="fBirthday" value="${YB.esc(f.birthday || '')}"></div>
+        <div class="form-group"><label>生日</label>
+          <input type="hidden" id="fBirthday" value="${YB.esc(f.birthday || '')}">
+          <div id="fBirthdayDisplay" style="padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer;color:${f.birthday ? 'var(--ink)' : 'var(--ink-light)'};">
+            ${f.birthday ? YB.esc(f.birthday) : '点击选择生日（可选）'}
+          </div>
+        </div>
         <div class="form-group"><label>微信/电话</label><input id="fContact" value="${YB.esc(f.contact || '')}"></div>
         <div class="form-group"><label>职业</label><input id="fOccupation" value="${YB.esc(f.occupation || '')}"></div>
         <div class="form-group"><label>怎么认识的</label><input id="fMet" value="${YB.esc(f.how_we_met || '')}"></div>
@@ -58,6 +63,80 @@ const FriendForm = (() => {
     });
 
     // 自定义添加关系
+    // 生日滚轮选择器
+    document.getElementById('fBirthdayDisplay').addEventListener('click', () => {
+      const current = document.getElementById('fBirthday').value;
+      const curY = current ? parseInt(current.slice(0,4)) : 2003;
+      const curM = current ? parseInt(current.slice(5,7)) : 1;
+      const curD = current ? parseInt(current.slice(8,10)) : 1;
+
+      const years = []; for (let y = 1950; y <= 2099; y++) years.push(y);
+      const months = Array.from({length:12}, (_,i) => i+1);
+      const daysInMonth = (y,m) => new Date(y, m, 0).getDate();
+
+      const mask = document.createElement('div');
+      mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;display:flex;align-items:flex-end;';
+      mask.innerHTML = `
+        <div style="background:var(--paper);width:100%;border-radius:20px 20px 0 0;padding:16px;max-height:60vh;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+            <button id="bdCancel" style="border:none;background:none;font-size:15px;color:var(--ink-light);cursor:pointer;">取消</button>
+            <button id="bdOk" style="border:none;background:none;font-size:15px;color:var(--accent);font-weight:600;cursor:pointer;">确定</button>
+          </div>
+          <div style="display:flex;height:180px;overflow:hidden;position:relative;">
+            <div style="position:absolute;top:50%;left:0;right:0;height:36px;background:rgba(0,0,0,0.05);transform:translateY(-50%);pointer-events:none;"></div>
+            <div id="bdY" style="flex:1;overflow-y:scroll;text-align:center;scrollbar-width:none;"></div>
+            <div id="bdM" style="flex:1;overflow-y:scroll;text-align:center;scrollbar-width:none;"></div>
+            <div id="bdD" style="flex:1;overflow-y:scroll;text-align:center;scrollbar-width:none;"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(mask);
+
+      function fillWheel(el, items, selected, unit) {
+        el.innerHTML = items.map(i => `<div data-v="${i}" style="height:36px;line-height:36px;font-size:16px;cursor:pointer;">${i}${unit}</div>`).join('');
+        const idx = items.indexOf(selected);
+        const centerOffset = (180 - 36) / 2; // 高亮框居中偏移
+        requestAnimationFrame(() => { el.scrollTop = idx * 36 - centerOffset; });
+      }
+
+      fillWheel(mask.querySelector('#bdY'), years, curY, '年');
+      fillWheel(mask.querySelector('#bdM'), months, curM, '月');
+      fillWheel(mask.querySelector('#bdD'), Array.from({length:daysInMonth(curY,curM)},(_,i)=>i+1), curD > daysInMonth(curY,curM) ? daysInMonth(curY,curM) : curD, '日');
+
+      let selY = curY, selM = curM, selD = curD;
+
+      function bindScroll(el, unit, cb) {
+        el.addEventListener('scroll', () => {
+          const centerOffset = (180 - 36) / 2;
+          const idx = Math.round((el.scrollTop + centerOffset) / 36);
+          const items = el.querySelectorAll('[data-v]');
+          if (items[idx]) cb(parseInt(items[idx].dataset.v));
+        });
+        el.querySelectorAll('[data-v]').forEach(d => {
+          d.onclick = () => {
+            const centerOffset = (180 - 36) / 2;
+            const idx = [...el.children].indexOf(d);
+            el.scrollTo({top: idx * 36 - centerOffset, behavior:'smooth'});
+          };
+        });
+      }
+
+      bindScroll(mask.querySelector('#bdY'), '年', v => { selY = v; const dd = mask.querySelector('#bdD'); fillWheel(dd, Array.from({length:daysInMonth(v,selM)},(_,i)=>i+1), Math.min(selD, daysInMonth(v,selM)), '日'); });
+      bindScroll(mask.querySelector('#bdM'), '月', v => { selM = v; const dd = mask.querySelector('#bdD'); fillWheel(dd, Array.from({length:daysInMonth(selY,v)},(_,i)=>i+1), Math.min(selD, daysInMonth(selY,v)), '日'); });
+      bindScroll(mask.querySelector('#bdD'), '日', v => selD = v);
+
+      mask.querySelector('#bdCancel').onclick = () => mask.remove();
+      mask.onclick = (e) => { if (e.target === mask) mask.remove(); };
+      mask.querySelector('#bdOk').onclick = () => {
+        const val = `${selY}-${String(selM).padStart(2,'0')}-${String(selD).padStart(2,'0')}`;
+        document.getElementById('fBirthday').value = val;
+        const disp = document.getElementById('fBirthdayDisplay');
+        disp.textContent = val;
+        disp.style.color = 'var(--ink)';
+        mask.remove();
+      };
+    });
+
     document.getElementById('addRelBtn').addEventListener('click', () => {
       // 自定义弹窗，不用浏览器原生 prompt
       const mask = document.createElement('div');

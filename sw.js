@@ -1,6 +1,6 @@
 // sw.js —— Service Worker，离线缓存（网络优先，保证总是最新代码）
 
-const CACHE = 'yourenbu-v3';
+const CACHE = 'yourenbu-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -38,9 +38,9 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('jianguoyun.com')) return;
-  // 网络优先：每次都尝试拉最新，离线时才用缓存
+  // 网络优先：每次都强制拉最新，离线时才用缓存
   e.respondWith(
-    fetch(e.request).then(res => {
+    fetch(e.request, { cache: 'no-cache' }).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, copy));
       return res;

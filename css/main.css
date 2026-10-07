@@ -66,8 +66,9 @@ html, body {
 @keyframes pulse { 50% { opacity: 0.4; } }
 
 .icon-btn {
-  background: none; border: none; font-size: 20px; cursor: pointer;
+  background: none; border: none; font-size: 16px; cursor: pointer;
   color: var(--ink);
+  font-family: inherit;
 }
 
 /* ---- 今日提醒 ---- */
