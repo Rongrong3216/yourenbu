@@ -11,10 +11,10 @@ const FriendDetail = (() => {
 
     container.innerHTML = `
       <div class="page">
-        <div class="topbar">
-          <button class="icon-btn" onclick="window.__onDetailBack()">‹ 返回</button>
-          <div style="font-size:14px;color:var(--ink-light);">档案</div>
-          <button class="icon-btn" onclick="FriendDetail.edit()">✏️</button>
+        <div class="topbar" style="position:relative;justify-content:center;">
+          <button class="icon-btn" onclick="window.__onDetailBack()" style="position:absolute;left:16px;">‹ 返回</button>
+          <div style="font-size:16px;font-weight:600;color:var(--ink-light);">档案</div>
+          <button class="icon-btn" onclick="FriendDetail.edit()" style="position:absolute;right:16px;">✏️</button>
         </div>
 
         <div style="text-align:center;margin-bottom:16px;">
