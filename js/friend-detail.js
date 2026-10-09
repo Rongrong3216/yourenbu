@@ -23,11 +23,6 @@ const FriendDetail = (() => {
           <div>${(friend.tags || []).map(t => `<span class="tag-pill">${YB.esc(t)}</span>`).join('')}</div>
         </div>
 
-        <div style="margin:0 16px;background:var(--paper);border-radius:12px;padding:12px;box-shadow:var(--shadow);">
-          <div style="font-size:12px;color:var(--ink-light);margin-bottom:8px;">📌 快速回顾</div>
-          ${quickReviewHTML()}
-        </div>
-
         <div id="detailTabContent" style="margin-top:16px;"></div>
       </div>
 
