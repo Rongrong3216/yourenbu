@@ -18,7 +18,7 @@ const FriendDetail = (() => {
         </div>
 
         <div style="text-align:center;margin-bottom:16px;">
-          <div style="width:64px;height:64px;border-radius:50%;background:${YB.colorHash(friend.name)};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;">${YB.esc((friend.nickname || friend.name).charAt(0))}</div>
+          <div style="width:64px;height:64px;border-radius:50%;background:${friend.avatar ? 'none' : YB.colorHash(friend.name)};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;overflow:hidden;">${friend.avatar ? `<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;">` : YB.esc((friend.nickname || friend.name).charAt(0))}</div>
           <div style="font-size:20px;font-weight:600;margin-top:8px;">${YB.esc(friend.nickname || friend.name)}</div>
           <div>${(friend.tags || []).map(t => `<span class="tag-pill">${YB.esc(t)}</span>`).join('')}</div>
         </div>
@@ -125,7 +125,7 @@ const FriendDetail = (() => {
   }
 
   function edit() {
-    App.navigate('form', { friend, from: 'home' });
+    App.navigate('form', { friend, from: 'detail', id: friend.id });
   }
 
   return { render, edit };

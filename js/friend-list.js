@@ -128,7 +128,7 @@ const FriendList = (() => {
         const initial = (f.nickname || f.name).charAt(0);
         return `
           <div class="fl-row" data-id="${f.id}" style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;background:var(--paper);">
-            <div style="width:40px;height:40px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;margin-right:12px;font-weight:600;flex-shrink:0;">${YB.esc(initial)}</div>
+            <div style="width:40px;height:40px;border-radius:50%;background:${f.avatar ? 'none' : bg};color:#fff;display:flex;align-items:center;justify-content:center;margin-right:12px;font-weight:600;flex-shrink:0;overflow:hidden;">${f.avatar ? `<img src="${f.avatar}" style="width:100%;height:100%;object-fit:cover;">` : YB.esc(initial)}</div>
             <div style="flex:1;min-width:0;">
               <div style="font-weight:500;">${YB.esc(f.nickname || f.name)}</div>
               <div style="font-size:12px;color:var(--ink-light);">${YB.esc((f.relation||[]).join(' · ') || (f.tags||[]).join(' · '))}</div>

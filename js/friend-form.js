@@ -1,5 +1,90 @@
 // friend-form.js —— 新增/编辑朋友
 
+// 通用裁剪函数：选完图后弹裁剪层，返回 Promise<dataURL>
+function cropImage(src) {
+  return new Promise((resolve) => {
+    const mask = document.createElement('div');
+    mask.style.cssText = 'position:fixed;inset:0;background:#000;z-index:400;display:flex;flex-direction:column;';
+    mask.innerHTML = `
+      <div style="display:flex;justify-content:space-between;padding:16px;align-items:center;color:#fff;">
+        <button id="cropCancel" style="background:none;border:none;color:#fff;font-size:16px;cursor:pointer;">取消</button>
+        <div style="font-size:16px;">调整头像</div>
+        <button id="cropOk" style="background:none;border:none;color:#fff;font-size:16px;cursor:pointer;font-weight:600;">完成</button>
+      </div>
+      <div id="cropStage" style="flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <img id="cropImg" style="position:absolute;max-width:none;user-select:none;-webkit-user-drag:none;">
+        <div style="position:absolute;width:250px;height:250px;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);pointer-events:none;border-radius:8px;"></div>
+      </div>
+    `;
+    document.body.appendChild(mask);
+
+    const img = mask.querySelector('#cropImg');
+    const stage = mask.querySelector('#cropStage');
+    let scale = 1, tx = 0, ty = 0;
+
+    img.onload = () => {
+      // 初始缩放：让图片短边填满 250 方框
+      const boxSize = 250;
+      const s = boxSize / Math.min(img.width, img.height);
+      scale = s;
+      applyTransform();
+    };
+    img.src = src;
+
+    function applyTransform() {
+      img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    }
+
+    // 拖动
+    let startX = 0, startY = 0, startTx = 0, startTy = 0;
+    stage.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTx = tx; startTy = ty;
+    }, { passive: true });
+    stage.addEventListener('touchmove', (e) => {
+      tx = startTx + (e.touches[0].clientX - startX);
+      ty = startTy + (e.touches[0].clientY - startY);
+      applyTransform();
+    }, { passive: true });
+
+    // 鼠标也支持（电脑调试用）
+    let mouseDown = false;
+    stage.addEventListener('mousedown', (e) => {
+      mouseDown = true;
+      startX = e.clientX; startY = e.clientY;
+      startTx = tx; startTy = ty;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!mouseDown) return;
+      tx = startTx + (e.clientX - startX);
+      ty = startTy + (e.clientY - startY);
+      applyTransform();
+    });
+    window.addEventListener('mouseup', () => mouseDown = false);
+
+    mask.querySelector('#cropCancel').onclick = () => { mask.remove(); resolve(null); };
+    mask.querySelector('#cropOk').onclick = () => {
+      // 裁剪：canvas 200x200
+      const canvas = document.createElement('canvas');
+      canvas.width = 200; canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      // 方框在屏幕上的大小是250，对应输出200
+      const boxSize = 250;
+      const outSize = 200;
+      // 原图中对应的区域
+      const sx = (-tx / scale) + ((img.width * scale - boxSize) / 2 / scale);
+      const sy = (-ty / scale) + ((img.height * scale - boxSize) / 2 / scale);
+      const sw = boxSize / scale;
+      const sh = boxSize / scale;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outSize, outSize);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      mask.remove();
+      resolve(dataUrl);
+    };
+  });
+}
+
 const FriendForm = (() => {
   async function render(container, params, onDone) {
     const f = params.friend || {};
@@ -17,6 +102,16 @@ const FriendForm = (() => {
           <div style="font-size:16px;font-weight:600;">${isEdit ? '编辑朋友' : '新朋友'}</div>
           <button class="icon-btn" id="saveFriendBtn" style="position:absolute;right:16px;">✓</button>
         </div>
+
+        ${isEdit ? `
+        <div style="text-align:center;padding:16px 0;">
+          <div id="fAvatar" style="width:80px;height:80px;border-radius:50%;background:${f.avatar ? 'none' : YB.colorHash(f.name || '?')};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;overflow:hidden;">
+            ${f.avatar ? `<img src="${f.avatar}" style="width:100%;height:100%;object-fit:cover;">` : YB.esc((f.nickname || f.name || '?').charAt(0))}
+          </div>
+          <div style="font-size:12px;color:var(--ink-light);margin-top:8px;">点击更换头像</div>
+          <input type="file" id="fAvatarInput" accept="image/*" style="display:none;">
+        </div>
+        ` : ''}
 
         <div class="form-group"><label>姓名 *</label><input id="fName" value="${YB.esc(f.name || '')}"></div>
         <div class="form-group"><label>昵称</label><input id="fNickname" value="${YB.esc(f.nickname || '')}"></div>
@@ -63,6 +158,49 @@ const FriendForm = (() => {
     });
 
     // 自定义添加关系
+    // 头像选择（仅编辑时）
+    let newAvatar = f.avatar || '';
+    if (isEdit) {
+      document.getElementById('fAvatar').addEventListener('click', () => {
+        const mask = document.createElement('div');
+        mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;display:flex;align-items:flex-end;';
+        mask.innerHTML = `
+          <div style="background:var(--paper);width:100%;border-radius:16px 16px 0 0;padding:16px;">
+            <button id="avatarUpload" style="width:100%;padding:14px;border:none;background:none;font-size:16px;cursor:pointer;border-bottom:1px solid var(--line);">📷 上传新头像</button>
+            <button id="avatarReset" style="width:100%;padding:14px;border:none;background:none;font-size:16px;cursor:pointer;color:var(--danger);">↩️ 恢复默认头像</button>
+            <button id="avatarCancel" style="width:100%;padding:14px;border:none;background:var(--bg);font-size:16px;cursor:pointer;margin-top:8px;border-radius:10px;">取消</button>
+          </div>
+        `;
+        document.body.appendChild(mask);
+        mask.querySelector('#avatarCancel').onclick = () => mask.remove();
+        mask.querySelector('#avatarReset').onclick = () => {
+          mask.remove();
+          newAvatar = '';
+          const avatarEl = document.getElementById('fAvatar');
+          avatarEl.style.background = YB.colorHash(f.name || '?');
+          avatarEl.textContent = (f.nickname || f.name || '?').charAt(0);
+        };
+        mask.querySelector('#avatarUpload').onclick = () => {
+          mask.remove();
+          document.getElementById('fAvatarInput').click();
+        };
+      });
+      document.getElementById('fAvatarInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const dataUrl = await cropImage(ev.target.result);
+          if (!dataUrl) return;
+          newAvatar = dataUrl;
+          const avatarEl = document.getElementById('fAvatar');
+          avatarEl.style.background = 'none';
+          avatarEl.innerHTML = `<img src="${newAvatar}" style="width:100%;height:100%;object-fit:cover;">`;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     // 生日滚轮选择器
     document.getElementById('fBirthdayDisplay').addEventListener('click', () => {
       const current = document.getElementById('fBirthday').value;
@@ -186,6 +324,7 @@ const FriendForm = (() => {
         known_anniversary: document.getElementById('fKnown').value,
         tags: document.getElementById('fTags').value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
         relation: [...pickedRel],
+        avatar: newAvatar,
         likes: document.getElementById('fLikes').value.trim(),
         dislikes: document.getElementById('fDislikes').value.trim(),
         updated_at: YB.nowISO()
@@ -203,9 +342,52 @@ const FriendForm = (() => {
         alert('保存失败：数据没有真正写入本地存储，请截图告诉我');
         return;
       }
+      const savedData = data;
       const all = await DB.getAll('friends');
       console.log('保存后朋友总数：', all.length);
-      onDone();
+      if (!isEdit) {
+        // 弹自定义提示
+        const mask = document.createElement('div');
+        mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
+        mask.innerHTML = `
+          <div style="background:var(--paper);border-radius:16px;padding:24px;width:100%;max-width:300px;text-align:center;">
+            <div style="font-size:40px;margin-bottom:12px;">🎉</div>
+            <div style="font-weight:600;margin-bottom:8px;">朋友已保存！</div>
+            <div style="font-size:14px;color:var(--ink-light);margin-bottom:20px;">要现在加个头像吗？</div>
+            <div style="display:flex;gap:10px;">
+              <button id="avatarNo" style="flex:1;padding:12px;border:none;background:var(--bg);border-radius:10px;cursor:pointer;">先不了</button>
+              <button id="avatarYes" style="flex:1;padding:12px;border:none;background:var(--accent);color:#fff;border-radius:10px;cursor:pointer;">确定</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(mask);
+        mask.querySelector('#avatarNo').onclick = () => { mask.remove(); onDone(); };
+        mask.querySelector('#avatarYes').onclick = () => {
+          mask.remove();
+          // 临时创建一个文件输入
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return onDone();
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+              const avatarData = await cropImage(ev.target.result);
+              if (!avatarData) return onDone();
+              savedData.avatar = avatarData;
+              await DB.put('friends', savedData);
+              Sync.markLocalModified();
+              Sync.schedulePush();
+              onDone();
+            };
+            reader.readAsDataURL(file);
+          };
+          input.click();
+        };
+      } else {
+        onDone();
+      }
     });
 
     if (isEdit) {

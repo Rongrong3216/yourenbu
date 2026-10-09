@@ -75,7 +75,7 @@ const Card = (() => {
       <div class="card-snap">
         <div class="flip-card">
           <div class="flip-face front face-front">
-            <div class="avatar" style="background:${bg}">${YB.esc(initial)}</div>
+            <div class="avatar" style="background:${f.avatar ? 'none' : bg};overflow:hidden;">${f.avatar ? `<img src="${f.avatar}" style="width:100%;height:100%;object-fit:cover;">` : YB.esc(initial)}</div>
             <div class="name">${YB.esc(f.nickname || f.name)}</div>
             <div class="tags">${(f.tags || []).slice(0, 2).map(t => `<span class="tag-pill">${YB.esc(t)}</span>`).join('')}</div>
             <div class="stats">

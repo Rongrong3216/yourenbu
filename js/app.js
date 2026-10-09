@@ -3,6 +3,7 @@
 const App = (() => {
   const app = document.getElementById('app');
   let currentView = 'home';
+  let prevView = null;
 
   async function boot() {
     DB.init();
@@ -26,12 +27,16 @@ const App = (() => {
   }
 
   function navigate(view, params = {}) {
+    prevView = currentView;
     currentView = view;
     if (view === 'home') Home.render(app, (p) => navigate('detail', p));
     else if (view === 'list') FriendList.render(app, (id) => navigate('detail', { id }));
-    else if (view === 'detail') FriendDetail.render(app, params.id, () => navigate('home'));
-    else if (view === 'settings') Settings.render(app, () => navigate('home'));
-    else if (view === 'form') FriendForm.render(app, params, () => navigate(params.from || 'home'));
+    else if (view === 'detail') FriendDetail.render(app, params.id, () => navigate(prevView === 'list' ? 'list' : 'home'));
+    else if (view === 'settings') Settings.render(app, () => navigate(prevView || 'home'));
+    else if (view === 'form') FriendForm.render(app, params, () => {
+      if (params.from === 'detail' && params.id) navigate('detail', { id: params.id });
+      else navigate(params.from || prevView || 'home');
+    });
   }
 
   return { boot, navigate };
