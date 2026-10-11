@@ -1,16 +1,17 @@
 // gift.js —— 送礼记录弹窗
 
 const GiftForm = (() => {
-  function open(friend, onSaved) {
+  function open(friend, onSaved, editItem) {
+    const isEdit = !!editItem;
     const mask = document.createElement('div');
     mask.className = 'modal-mask';
     mask.innerHTML = `
       <div class="modal-sheet">
-        <h3>记一笔送礼 · ${YB.esc(friend.nickname || friend.name)}</h3>
-        <div class="form-group"><label>日期</label><input type="date" id="gDate" value="${YB.todayStr()}"></div>
-        <div class="form-group"><label>送了什么 *</label><input id="gName" placeholder="比如：香水"></div>
-        <div class="form-group"><label>花费</label><input type="number" id="gCost" placeholder="可选"></div>
-        <div class="form-group"><label>对方反应</label><input id="gReaction" placeholder="可选"></div>
+        <h3>${isEdit ? '编辑' : '记一笔'}送礼 · ${YB.esc(friend.nickname || friend.name)}</h3>
+        <div class="form-group"><label>日期</label><input type="date" id="gDate" value="${isEdit ? editItem.date : YB.todayStr()}"></div>
+        <div class="form-group"><label>送了什么 *</label><input id="gName" placeholder="比如：香水" value="${isEdit ? YB.esc(editItem.gift_name) : ''}"></div>
+        <div class="form-group"><label>花费</label><input type="number" id="gCost" placeholder="可选" value="${isEdit && editItem.cost ? editItem.cost : ''}"></div>
+        <div class="form-group"><label>对方反应</label><input id="gReaction" placeholder="可选" value="${isEdit ? YB.esc(editItem.reaction || '') : ''}"></div>
         <div style="display:flex;gap:12px;margin-top:16px;">
           <button class="btn ghost block" id="gCancel">取消</button>
           <button class="btn block" id="gSave">保存</button>
@@ -24,7 +25,7 @@ const GiftForm = (() => {
       const name = document.getElementById('gName').value.trim();
       if (!name) return alert('送了什么必填');
       await DB.put('gifts', {
-        id: YB.genId('g'),
+        id: isEdit ? editItem.id : YB.genId('g'),
         friend_id: friend.id,
         date: document.getElementById('gDate').value,
         gift_name: name,
