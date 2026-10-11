@@ -194,6 +194,7 @@ const FriendDetail = (() => {
       });
 
       async function toggleDone() {
+        if (navigator.vibrate) navigator.vibrate(10);
         e.raw.done = !e.raw.done;
         await DB.put('moments', e.raw);
         Sync.markLocalModified();
