@@ -88,7 +88,7 @@ const Card = (() => {
                 <div class="lbl">上次联系</div>
               </div>
             </div>
-            ${lastMoment ? `<div class="moment-snippet">"${YB.esc(lastMoment.content.slice(0, 50))}${lastMoment.content.length > 50 ? '…' : ''}"</div>` : ''}
+            ${lastMoment ? `<div class="moment-snippet">"${YB.esc(lastMoment.content.slice(0, 50))}${lastMoment.content.length > 50 ? '…' : ''}"</div>` : '<div class="moment-snippet" style="visibility:hidden;">.</div>'}
             <button class="btn ghost quick-note-btn" data-btn="note">+ 记一笔</button>
           </div>
           <div class="flip-face back face-back">
