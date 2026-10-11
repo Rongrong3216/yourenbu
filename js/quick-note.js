@@ -1,19 +1,20 @@
 // quick-note.js —— 快速记一笔（小事 / 承诺）
 
 const QuickNote = (() => {
-  function open(friend, onSaved, editItem) {
+  function open(friend, onSaved, editItem, defaultType) {
     const isEdit = !!editItem;
-    const initialType = editItem ? (editItem.type === 'promise' ? 'promise' : 'moment') : 'moment';
+    const initialType = editItem ? (editItem.type === 'promise' ? 'promise' : 'moment') : (defaultType || 'moment');
     const initialDate = editItem ? editItem.date : YB.todayStr();
     const initialContent = editItem ? editItem.content : '';
     const initialDue = editItem ? (editItem.due_date || '') : '';
 
     const mask = document.createElement('div');
     mask.className = 'modal-mask';
+    const showTypeSelector = !defaultType && !editItem;
     mask.innerHTML = `
       <div class="modal-sheet">
-        <h3>${isEdit ? '编辑' : '记一笔'} · ${YB.esc(friend.nickname || friend.name)}</h3>
-        <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <h3>${isEdit ? '编辑' : (initialType === 'promise' ? '记一笔承诺' : '记一笔小事')} · ${YB.esc(friend.nickname || friend.name)}</h3>
+        ${showTypeSelector ? `<div style="display:flex;gap:10px;margin-bottom:16px;">
           <div id="typeMoment" style="flex:1;text-align:center;padding:10px;border:1px solid var(--accent);border-radius:10px;cursor:pointer;background:rgba(195,141,158,0.1);">
             <div style="font-size:20px;">📝</div>
             <div style="font-size:13px;margin-top:4px;">小事</div>
@@ -22,7 +23,7 @@ const QuickNote = (() => {
             <div style="font-size:20px;">📌</div>
             <div style="font-size:13px;margin-top:4px;">承诺</div>
           </div>
-        </div>
+        </div>` : ''}
         <div class="form-group">
           <label>日期</label>
           <input type="date" id="qnDate" value="${initialDate}">
@@ -49,26 +50,29 @@ const QuickNote = (() => {
     const typePromise = mask.querySelector('#typePromise');
     const dueGroup = mask.querySelector('#dueGroup');
 
-    function switchType(t) {
-      currentType = t;
-      if (t === 'moment') {
-        typeMoment.style.background = 'rgba(195,141,158,0.1)';
-        typeMoment.style.borderColor = 'var(--accent)';
-        typePromise.style.background = '';
-        typePromise.style.borderColor = 'var(--line)';
-        dueGroup.style.display = 'none';
-      } else {
-        typePromise.style.background = 'rgba(195,141,158,0.1)';
-        typePromise.style.borderColor = 'var(--accent)';
-        typeMoment.style.background = '';
-        typeMoment.style.borderColor = 'var(--line)';
-        dueGroup.style.display = 'block';
+    if (typeMoment) {
+      function switchType(t) {
+        currentType = t;
+        if (t === 'moment') {
+          typeMoment.style.background = 'rgba(195,141,158,0.1)';
+          typeMoment.style.borderColor = 'var(--accent)';
+          typePromise.style.background = '';
+          typePromise.style.borderColor = 'var(--line)';
+          dueGroup.style.display = 'none';
+        } else {
+          typePromise.style.background = 'rgba(195,141,158,0.1)';
+          typePromise.style.borderColor = 'var(--accent)';
+          typeMoment.style.background = '';
+          typeMoment.style.borderColor = 'var(--line)';
+          dueGroup.style.display = 'block';
+        }
       }
+      typeMoment.addEventListener('click', () => switchType('moment'));
+      typePromise.addEventListener('click', () => switchType('promise'));
+    } else {
+      // 直接指定类型，显示/隐藏截止日期
+      dueGroup.style.display = currentType === 'promise' ? 'block' : 'none';
     }
-    if (initialType === 'promise') switchType('promise');
-
-    typeMoment.addEventListener('click', () => switchType('moment'));
-    typePromise.addEventListener('click', () => switchType('promise'));
 
     mask.addEventListener('click', (e) => { if (e.target === mask) mask.remove(); });
     mask.querySelector('#qnCancel').addEventListener('click', () => mask.remove());
@@ -76,7 +80,7 @@ const QuickNote = (() => {
     mask.querySelector('#qnSave').addEventListener('click', async () => {
       const content = mask.querySelector('#qnContent').value.trim();
       const date = mask.querySelector('#qnDate').value;
-      if (!content) return alert('写点什么再保存');
+      if (!content) return YB.alert('写点什么再保存');
 
       const data = {
         id: isEdit ? editItem.id : YB.genId('m'),

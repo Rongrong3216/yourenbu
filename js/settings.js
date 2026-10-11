@@ -108,15 +108,15 @@ const Settings = (() => {
     document.getElementById('importFile').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      if (!confirm('导入将覆盖当前所有数据，确定继续？')) return;
+      if (!await YB.confirm('导入将覆盖当前所有数据，确定继续？', '导入', '取消')) return;
       const text = await file.text();
       try {
         const data = JSON.parse(text);
         await DB.importAll(data);
-        alert('导入成功');
+        await YB.alert('导入成功');
         location.reload();
       } catch (err) {
-        alert('文件格式错误：' + err.message);
+        await YB.alert('文件格式错误：' + err.message);
       }
     });
 
@@ -155,7 +155,7 @@ const Settings = (() => {
 
     // 清空
     document.getElementById('clearAllBtn').addEventListener('click', async () => {
-      if (!confirm('确定清空所有数据？此操作不可恢复')) return;
+      if (!await YB.confirm('确定清空所有数据？此操作不可恢复', '清空', '取消')) return;
       await DB.clearAll();
       location.reload();
     });

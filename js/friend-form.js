@@ -310,7 +310,7 @@ const FriendForm = (() => {
     document.getElementById('saveFriendBtn').addEventListener('click', async () => {
       const name = document.getElementById('fName').value.trim();
       const birthday = document.getElementById('fBirthday').value;
-      if (!name) return alert('姓名必填');
+      if (!name) return YB.alert('姓名必填');
 
       const data = {
         ...f,
@@ -339,7 +339,7 @@ const FriendForm = (() => {
       // 立即验证是否真的写进去了
       const verify = await DB.getById('friends', data.id);
       if (!verify) {
-        alert('保存失败：数据没有真正写入本地存储，请截图告诉我');
+        await YB.alert('保存失败：数据没有真正写入本地存储，请截图告诉我');
         return;
       }
       const savedData = data;
@@ -392,7 +392,7 @@ const FriendForm = (() => {
 
     if (isEdit) {
       document.getElementById('delFriendBtn').addEventListener('click', async () => {
-        if (!confirm('确定删除这个朋友？相关的温情小事和送礼记录也会删掉')) return;
+        if (!await YB.confirm('相关的所有记录都会被删掉，是否确定删除这个朋友？', '删除', '取消')) return;
         await DB.remove('friends', f.id);
         const moments = await DB.getAll('moments');
         for (const m of moments.filter(m => m.friend_id === f.id)) await DB.remove('moments', m.id);

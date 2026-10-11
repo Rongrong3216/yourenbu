@@ -106,7 +106,7 @@ html, body {
   color: var(--ink-light);
   font-size: 12px;
 }
-.bottom-tabbar .tab.active { color: var(--accent-dark); }
+.bottom-tabbar .tab.active { color: var(--accent-dark); font-weight: 700; }
 .bottom-tabbar .tab .icon { font-size: 20px; display: block; margin-bottom: 2px; }
 
 /* ---- 悬浮 + ---- */

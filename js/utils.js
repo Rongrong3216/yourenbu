@@ -104,5 +104,41 @@ const YB = (() => {
     }[c]));
   }
 
-  return { genId, daysUntilBirthday, daysUntil, daysSince, formatRelative, calcKnownDuration, colorHash, hashPin, todayStr, nowISO, esc };
+  // 自定义 alert
+  function alert(msg) {
+    return new Promise(resolve => {
+      const mask = document.createElement('div');
+      mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
+      mask.innerHTML = `
+        <div style="background:var(--paper);border-radius:16px;padding:24px;width:100%;max-width:300px;text-align:center;">
+          <div style="margin-bottom:20px;font-size:14px;line-height:1.5;">${esc(msg)}</div>
+          <button id="ybAlertOk" style="width:100%;padding:12px;border:none;background:var(--accent);color:#fff;border-radius:10px;cursor:pointer;">确定</button>
+        </div>
+      `;
+      document.body.appendChild(mask);
+      mask.querySelector('#ybAlertOk').onclick = () => { mask.remove(); resolve(); };
+    });
+  }
+
+  // 自定义 confirm
+  function confirm(msg, okText = '确定', cancelText = '取消') {
+    return new Promise(resolve => {
+      const mask = document.createElement('div');
+      mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
+      mask.innerHTML = `
+        <div style="background:var(--paper);border-radius:16px;padding:24px;width:100%;max-width:300px;text-align:center;">
+          <div style="margin-bottom:20px;font-size:14px;line-height:1.5;">${esc(msg)}</div>
+          <div style="display:flex;gap:10px;">
+            <button id="ybConfirmNo" style="flex:1;padding:12px;border:none;background:var(--bg);border-radius:10px;cursor:pointer;">${esc(cancelText)}</button>
+            <button id="ybConfirmYes" style="flex:1;padding:12px;border:none;background:var(--danger);color:#fff;border-radius:10px;cursor:pointer;">${esc(okText)}</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(mask);
+      mask.querySelector('#ybConfirmNo').onclick = () => { mask.remove(); resolve(false); };
+      mask.querySelector('#ybConfirmYes').onclick = () => { mask.remove(); resolve(true); };
+    });
+  }
+
+  return { genId, daysUntilBirthday, daysUntil, daysSince, formatRelative, calcKnownDuration, colorHash, hashPin, todayStr, nowISO, esc, alert, confirm };
 })();

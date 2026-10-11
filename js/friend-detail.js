@@ -3,10 +3,13 @@
 const FriendDetail = (() => {
   let friend = null;
   let activeTab = 'basic';
+  let momentFilter = 'moment';
+  let currentOnBack = null;
 
   async function render(container, id, onBack) {
     friend = await DB.getById('friends', id);
     if (!friend) { onBack(); return; }
+    currentOnBack = onBack;
     window.__onDetailBack = onBack;
 
     container.innerHTML = `
@@ -14,7 +17,7 @@ const FriendDetail = (() => {
         <div class="topbar" style="position:relative;justify-content:center;">
           <button class="icon-btn" onclick="window.__onDetailBack()" style="position:absolute;left:16px;">‹ 返回</button>
           <div style="font-size:16px;font-weight:600;color:var(--ink-light);">档案</div>
-          <button class="icon-btn" onclick="FriendDetail.edit()" style="position:absolute;right:16px;">✏️</button>
+          ${activeTab !== 'moments' ? `<button class="icon-btn" onclick="FriendDetail.edit()" style="position:absolute;right:16px;">✏️</button>` : ''}
         </div>
 
         <div style="text-align:center;margin-bottom:16px;">
@@ -108,22 +111,19 @@ const FriendDetail = (() => {
       }))
     ].sort((a, b) => b.date.localeCompare(a.date));
 
-    // 筛选状态
-    if (!el._filter) el._filter = 'all';
-
-    const filterTabs = ['全部', '小事', '承诺', '礼物'].map(t => {
-      const key = t === '全部' ? 'all' : t === '小事' ? 'moment' : t === '承诺' ? 'promise' : 'gift';
-      return `<div class="sub-tab ${el._filter === key ? 'active' : ''}" data-filter="${key}" style="padding:6px 14px;border-radius:16px;font-size:13px;cursor:pointer;background:${el._filter === key ? 'var(--accent)' : 'var(--bg)'};color:${el._filter === key ? '#fff' : 'var(--ink-light)'};">${t}</div>`;
+    const filterTabs = ['小事', '承诺', '礼物'].map(t => {
+      const key = t === '小事' ? 'moment' : t === '承诺' ? 'promise' : 'gift';
+      return `<div class="sub-tab ${momentFilter === key ? 'active' : ''}" data-filter="${key}" style="flex:1;text-align:center;padding:6px 0;border-radius:16px;font-size:13px;cursor:pointer;background:${momentFilter === key ? 'var(--accent)' : 'var(--bg)'};color:${momentFilter === key ? '#fff' : 'var(--ink-light)'};">${t}</div>`;
     }).join('');
 
-    const filtered = el._filter === 'all' ? events : events.filter(e => e.type === el._filter);
+    const filtered = events.filter(e => e.type === momentFilter);
 
     el.innerHTML = `
       <div style="padding:0 16px;">
         <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">${filterTabs}</div>
         <div style="display:flex;gap:12px;margin-bottom:16px;">
-          <button class="btn ghost" id="addMomentBtn" style="flex:1;padding:10px;font-size:14px;">+ 记一笔</button>
-          <button class="btn ghost" id="addGiftBtn" style="flex:1;padding:10px;font-size:14px;">+ 送礼物</button>
+          ${momentFilter !== 'gift' ? `<button class="btn ghost" id="addMomentBtn" style="flex:1;padding:10px;font-size:14px;">+ 记一笔</button>` : ''}
+          ${momentFilter === 'gift' ? `<button class="btn ghost" id="addGiftBtn" style="flex:1;padding:10px;font-size:14px;">+ 送礼物</button>` : ''}
         </div>
         ${filtered.length === 0 ? '<div style="text-align:center;color:var(--ink-light);padding:20px;">还没有记录</div>' : `
         <div style="position:relative;padding-left:20px;">
@@ -134,6 +134,9 @@ const FriendDetail = (() => {
             return `
             <div class="swipe-item" style="position:relative;margin-bottom:16px;" data-idx="${idx}">
               <div style="position:absolute;left:-18px;top:4px;width:10px;height:10px;border-radius:50%;background:${color};border:2px solid var(--paper);z-index:2;"></div>
+              ${e.type === 'promise' ? `<div class="swipe-actions-left" style="position:absolute;left:0;top:0;bottom:0;display:flex;border-radius:12px;overflow:hidden;">
+                <button class="swipe-done" style="width:80px;border:none;${e.done ? 'background:#95a5a6;' : 'background:#27ae60;'}color:#fff;cursor:pointer;font-size:14px;">${e.done ? '↩️ 恢复' : '✓ 完成'}</button>
+              </div>` : ''}
               <div class="swipe-actions" style="position:absolute;right:0;top:0;bottom:0;display:flex;border-radius:12px;overflow:hidden;">
                 <button class="swipe-edit" style="width:60px;border:none;background:#3498db;color:#fff;cursor:pointer;font-size:14px;">编辑</button>
                 <button class="swipe-del" style="width:60px;border:none;background:#e74c3c;color:#fff;cursor:pointer;font-size:14px;">删除</button>
@@ -150,12 +153,13 @@ const FriendDetail = (() => {
       </div>
     `;
 
-    // 左滑操作
+    // 左滑/右滑操作
     el.querySelectorAll('.swipe-item').forEach(item => {
       const card = item.querySelector('.swipe-card');
       const idx = parseInt(item.dataset.idx);
       const e = filtered[idx];
-      let startX = 0, currentX = 0, isOpen = false;
+      const canRightSwipe = e.type === 'promise';
+      let startX = 0, currentX = 0;
 
       item.addEventListener('touchstart', (ev) => {
         startX = ev.touches[0].clientX;
@@ -165,7 +169,12 @@ const FriendDetail = (() => {
       item.addEventListener('touchmove', (ev) => {
         currentX = ev.touches[0].clientX - startX;
         if (currentX < 0) {
+          // 左滑：露出编辑/删除
           const x = Math.max(-120, currentX);
+          card.style.transform = `translateX(${x}px)`;
+        } else if (canRightSwipe && currentX > 0) {
+          // 右滑：露出完成/恢复
+          const x = Math.min(80, currentX);
           card.style.transform = `translateX(${x}px)`;
         }
       }, { passive: true });
@@ -174,26 +183,54 @@ const FriendDetail = (() => {
         card.style.transition = 'transform 0.2s ease';
         if (currentX < -60) {
           card.style.transform = 'translateX(-120px)';
-          isOpen = true;
+        } else if (canRightSwipe && currentX > 40) {
+          // 右滑直接触发完成/恢复，不露出按钮
+          card.style.transform = 'translateX(0)';
+          toggleDone();
         } else {
           card.style.transform = 'translateX(0)';
-          isOpen = false;
         }
         currentX = 0;
       });
 
+      async function toggleDone() {
+        e.raw.done = !e.raw.done;
+        await DB.put('moments', e.raw);
+        Sync.markLocalModified();
+        Sync.schedulePush();
+        render(document.getElementById('app'), friend.id, currentOnBack);
+      }
+
+      // 点完成/恢复（仅承诺）——保留按钮作为可点区域，但右滑已直接触发
+      const doneBtn = item.querySelector('.swipe-done');
+      if (doneBtn) doneBtn.addEventListener('click', toggleDone);
+
       // 点编辑
       item.querySelector('.swipe-edit').addEventListener('click', async () => {
         if (e.type === 'gift') {
-          GiftForm.open(friend, () => render(document.getElementById('app'), friend.id, () => {}), e.raw);
+          GiftForm.open(friend, () => render(document.getElementById('app'), friend.id, currentOnBack), e.raw);
         } else {
-          QuickNote.open(friend, () => render(document.getElementById('app'), friend.id, () => {}), e.raw);
+          QuickNote.open(friend, () => render(document.getElementById('app'), friend.id, currentOnBack), e.raw);
         }
       });
 
       // 点删除
-      item.querySelector('.swipe-del').addEventListener('click', async () => {
-        if (confirm('是否确定要删除？')) {
+      item.querySelector('.swipe-del').addEventListener('click', () => {
+        const delMask = document.createElement('div');
+        delMask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
+        delMask.innerHTML = `
+          <div style="background:var(--paper);border-radius:16px;padding:24px;width:100%;max-width:300px;text-align:center;">
+            <div style="font-weight:600;margin-bottom:20px;">是否确定要删除？</div>
+            <div style="display:flex;gap:10px;">
+              <button id="delNo" style="flex:1;padding:12px;border:none;background:var(--bg);border-radius:10px;cursor:pointer;">否</button>
+              <button id="delYes" style="flex:1;padding:12px;border:none;background:var(--danger);color:#fff;border-radius:10px;cursor:pointer;">是</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(delMask);
+        delMask.querySelector('#delNo').onclick = () => delMask.remove();
+        delMask.querySelector('#delYes').onclick = async () => {
+          delMask.remove();
           if (e.type === 'gift') {
             await DB.remove('gifts', e.raw.id);
           } else {
@@ -201,21 +238,23 @@ const FriendDetail = (() => {
           }
           Sync.markLocalModified();
           Sync.schedulePush();
-          render(document.getElementById('app'), friend.id, () => {});
-        }
+          render(document.getElementById('app'), friend.id, currentOnBack);
+        };
       });
     });
 
     // 筛选切换
     el.querySelectorAll('.sub-tab').forEach(t => {
       t.addEventListener('click', () => {
-        el._filter = t.dataset.filter;
+        momentFilter = t.dataset.filter;
         renderMoments(el);
       });
     });
 
-    document.getElementById('addMomentBtn').addEventListener('click', () => QuickNote.open(friend, () => render(document.getElementById('app'), friend.id, () => {})));
-    document.getElementById('addGiftBtn').addEventListener('click', () => GiftForm.open(friend, () => render(document.getElementById('app'), friend.id, () => {})));
+    const addMomentBtn = document.getElementById('addMomentBtn');
+    if (addMomentBtn) addMomentBtn.addEventListener('click', () => QuickNote.open(friend, () => render(document.getElementById('app'), friend.id, currentOnBack), null, momentFilter === 'promise' ? 'promise' : 'moment'));
+    const addGiftBtn = document.getElementById('addGiftBtn');
+    if (addGiftBtn) addGiftBtn.addEventListener('click', () => GiftForm.open(friend, () => render(document.getElementById('app'), friend.id, currentOnBack)));
   }
 
   function edit() {

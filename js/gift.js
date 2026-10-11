@@ -23,7 +23,7 @@ const GiftForm = (() => {
     document.getElementById('gCancel').addEventListener('click', () => mask.remove());
     document.getElementById('gSave').addEventListener('click', async () => {
       const name = document.getElementById('gName').value.trim();
-      if (!name) return alert('送了什么必填');
+      if (!name) return YB.alert('送了什么必填');
       await DB.put('gifts', {
         id: isEdit ? editItem.id : YB.genId('g'),
         friend_id: friend.id,

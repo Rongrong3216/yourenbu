@@ -41,7 +41,7 @@ const Card = (() => {
         e.stopPropagation();
         const alreadyMarked = f.last_contact_at && f.last_contact_at.slice(0, 10) === YB.todayStr();
         if (alreadyMarked) {
-          if (!confirm('取消今天的联系标记？')) return;
+          if (!await YB.confirm('取消今天的联系标记？', '是', '否')) return;
           f.last_contact_at = null;
         } else {
           f.last_contact_at = YB.nowISO();
