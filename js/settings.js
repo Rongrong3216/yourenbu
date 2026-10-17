@@ -77,7 +77,7 @@ const Settings = (() => {
     const dotColors = {
       birthday: '#E57373',
       custom: '#C38D9E',
-      moment: '#C38D9E',
+      moment: '#90BE6D',
       promise: '#7986CB',
       gift: '#E8B86D'
     };
@@ -88,8 +88,9 @@ const Settings = (() => {
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const dayEvents = events[dateStr] || [];
-      const uniqueTypes = [...new Set(dayEvents.map(e => e.type))];
-      const dots = uniqueTypes.map(t => `<span style="width:5px;height:5px;border-radius:50%;background:${dotColors[t]};display:inline-block;"></span>`).join('');
+      // 多类事件同日：只显示一个圆点，颜色 = 最早创建的那类事件
+      const dotType = dayEvents.length > 0 ? dayEvents[0].type : null;
+      const dots = dotType ? `<span style="width:6px;height:6px;border-radius:50%;background:${dotColors[dotType]};display:inline-block;"></span>` : '';
       const isToday = dateStr === todayStr;
       const isSelected = dateStr === selectedDate;
       cells += `
@@ -169,7 +170,7 @@ const Settings = (() => {
       rerenderMiniCal(container, +1);
     });
     document.getElementById('miniCalTitle').addEventListener('click', () => {
-      // TODO: 进入全屏日历页（下一步做）
+      App.navigate('fc', { date: selectedDate || toISODate(new Date()) });
     });
     container.querySelectorAll('.cal-cell').forEach(cell => {
       cell.addEventListener('click', () => {
@@ -178,6 +179,15 @@ const Settings = (() => {
         rerenderMiniCal(container);
       });
     });
+
+    // 点"安排"区域进入全屏日历
+    const dayList = document.getElementById('miniCalDayList');
+    if (dayList) {
+      dayList.style.cursor = 'pointer';
+      dayList.addEventListener('click', () => {
+        if (selectedDate) App.navigate('fc', { date: selectedDate });
+      });
+    }
 
     // 左右滑动切月
     const box = document.getElementById('miniCalBox');

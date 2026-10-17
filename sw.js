@@ -1,6 +1,6 @@
 // sw.js —— Service Worker，离线缓存（网络优先，保证总是最新代码）
 
-const CACHE = 'yourenbu-v5';
+const CACHE = 'yourenbu-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const ASSETS = [
   './js/moment.js',
   './js/gift.js',
   './js/settings.js',
+  './js/full-calendar.js',
   './manifest.json'
 ];
 

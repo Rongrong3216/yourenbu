@@ -173,3 +173,13 @@ html, body {
 }
 .mini-cal-slide-right { animation: miniCalSlideInRight 0.25s ease-out; }
 .mini-cal-slide-left { animation: miniCalSlideInLeft 0.25s ease-out; }
+
+/* 隐藏原生 date input 空值占位符 */
+input[type="date"]:invalid::-webkit-datetime-edit,
+input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
+  color: transparent;
+}
+input[type="date"]:invalid::before {
+  content: '点击选择日期';
+  color: var(--ink-light);
+}
