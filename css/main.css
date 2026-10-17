@@ -161,3 +161,15 @@ html, body {
   overflow-y: auto;
 }
 .modal-sheet h3 { margin-bottom: 16px; }
+
+/* 迷你月历切月动效 */
+@keyframes miniCalSlideInRight {
+  from { transform: translateX(40px); opacity: 0.3; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes miniCalSlideInLeft {
+  from { transform: translateX(-40px); opacity: 0.3; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.mini-cal-slide-right { animation: miniCalSlideInRight 0.25s ease-out; }
+.mini-cal-slide-left { animation: miniCalSlideInLeft 0.25s ease-out; }
