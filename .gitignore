@@ -11,3 +11,10 @@ desktop.ini
 # 临时文件
 *.log
 *.tmp
+
+# 内部文档（不公开）
+HANDOFF.md
+PRD.md
+DEV-PLAN.md
+开发计划.md
+CHANGELOG.md
