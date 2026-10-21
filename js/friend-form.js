@@ -124,7 +124,7 @@ const FriendForm = (() => {
         <div class="form-group"><label>微信/电话</label><input id="fContact" value="${YB.esc(f.contact || '')}"></div>
         <div class="form-group"><label>职业</label><input id="fOccupation" value="${YB.esc(f.occupation || '')}"></div>
         <div class="form-group"><label>怎么认识的</label><input id="fMet" value="${YB.esc(f.how_we_met || '')}"></div>
-        <div class="form-group"><label>认识纪念日</label><input type="date" id="fKnown" value="${YB.esc(f.known_anniversary || '')}"></div>
+        <div class="form-group"><label>认识纪念日</label><input type="date" id="fKnown" value="${YB.esc(f.known_anniversary || '')}" class="${f.known_anniversary ? '' : 'is-empty'}"></div>
         <div class="form-group"><label>关系类型（可多选）</label>
           <div id="relationPick" style="display:flex;gap:10px;flex-wrap:wrap;">
             ${allRels.map(r => `
@@ -200,6 +200,12 @@ const FriendForm = (() => {
         reader.readAsDataURL(file);
       });
     }
+
+    // 认识纪念日空值样式切换
+    const fKnown = document.getElementById('fKnown');
+    fKnown.addEventListener('input', () => {
+      fKnown.classList.toggle('is-empty', !fKnown.value);
+    });
 
     // 生日滚轮选择器
     document.getElementById('fBirthdayDisplay').addEventListener('click', () => {

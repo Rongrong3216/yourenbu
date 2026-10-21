@@ -26,15 +26,15 @@ const QuickNote = (() => {
         </div>` : ''}
         <div class="form-group">
           <label>日期</label>
-          <input type="date" id="qnDate" value="${initialDate}">
+          <input type="date" id="qnDate" value="${initialDate}" class="${initialDate ? '' : 'is-empty'}">
         </div>
         <div class="form-group" id="dueGroup" style="display:none;">
           <label>截止日期（可选）</label>
-          <input type="date" id="qnDue" value="${initialDue}">
+          <input type="date" id="qnDue" value="${initialDue}" class="${initialDue ? '' : 'is-empty'}">
         </div>
         <div class="form-group">
           <label>写点什么</label>
-          <textarea id="qnContent" placeholder="你们今天做了什么？他说的哪句话让你感动？">${YB.esc(initialContent)}</textarea>
+          <textarea id="qnContent" placeholder="你们今天做了什么？ta说的哪句话让你感动？">${YB.esc(initialContent)}</textarea>
         </div>
         <div style="display:flex;gap:12px;margin-top:16px;">
           <button class="btn ghost block" id="qnCancel">取消</button>
@@ -49,6 +49,7 @@ const QuickNote = (() => {
     const typeMoment = mask.querySelector('#typeMoment');
     const typePromise = mask.querySelector('#typePromise');
     const dueGroup = mask.querySelector('#dueGroup');
+    const qnContent = mask.querySelector('#qnContent');
 
     if (typeMoment) {
       function switchType(t) {
@@ -59,12 +60,14 @@ const QuickNote = (() => {
           typePromise.style.background = '';
           typePromise.style.borderColor = 'var(--line)';
           dueGroup.style.display = 'none';
+          qnContent.placeholder = '你们今天做了什么？ta说的哪句话让你感动？';
         } else {
           typePromise.style.background = 'rgba(195,141,158,0.1)';
           typePromise.style.borderColor = 'var(--accent)';
           typeMoment.style.background = '';
           typeMoment.style.borderColor = 'var(--line)';
           dueGroup.style.display = 'block';
+          qnContent.placeholder = '记一下你答应ta的事，别忘了~';
         }
       }
       typeMoment.addEventListener('click', () => switchType('moment'));
@@ -72,7 +75,14 @@ const QuickNote = (() => {
     } else {
       // 直接指定类型，显示/隐藏截止日期
       dueGroup.style.display = currentType === 'promise' ? 'block' : 'none';
+      qnContent.placeholder = currentType === 'promise' ? '记一下你答应ta的事，别忘了~' : '你们今天做了什么？ta说的哪句话让你感动？';
     }
+
+    // 日期输入框空值样式切换
+    const qnDate = mask.querySelector('#qnDate');
+    const qnDue = mask.querySelector('#qnDue');
+    qnDate.addEventListener('input', () => qnDate.classList.toggle('is-empty', !qnDate.value));
+    qnDue.addEventListener('input', () => qnDue.classList.toggle('is-empty', !qnDue.value));
 
     mask.addEventListener('click', (e) => { if (e.target === mask) mask.remove(); });
     mask.querySelector('#qnCancel').addEventListener('click', () => mask.remove());

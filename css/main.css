@@ -174,12 +174,20 @@ html, body {
 .mini-cal-slide-right { animation: miniCalSlideInRight 0.25s ease-out; }
 .mini-cal-slide-left { animation: miniCalSlideInLeft 0.25s ease-out; }
 
-/* 隐藏原生 date input 空值占位符 */
-input[type="date"]:invalid::-webkit-datetime-edit,
-input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
-  color: transparent;
+/* 统一日期输入框样式：空时空白，整框可点弹日历 */
+input[type="date"] {
+  position: relative;
 }
-input[type="date"]:invalid::before {
-  content: '点击选择日期';
-  color: var(--ink-light);
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+input[type="date"].is-empty::-webkit-datetime-edit,
+input[type="date"].is-empty::-webkit-datetime-edit-fields-wrapper {
+  color: transparent;
 }

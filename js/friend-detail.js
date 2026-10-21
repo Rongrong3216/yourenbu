@@ -17,7 +17,7 @@ const FriendDetail = (() => {
         <div class="topbar" style="position:relative;justify-content:center;">
           <button class="icon-btn" onclick="window.__onDetailBack()" style="position:absolute;left:16px;">‹ 返回</button>
           <div style="font-size:16px;font-weight:600;color:var(--ink-light);">档案</div>
-          ${activeTab !== 'moments' ? `<button class="icon-btn" onclick="FriendDetail.edit()" style="position:absolute;right:16px;">✏️</button>` : ''}
+          ${activeTab !== 'moments' ? `<button class="icon-btn" onclick="FriendDetail.${activeTab === 'prefs' ? 'editPrefs' : 'edit'}()" style="position:absolute;right:16px;">✏️</button>` : ''}
         </div>
 
         <div style="text-align:center;margin-bottom:16px;">
@@ -74,15 +74,29 @@ const FriendDetail = (() => {
     } else if (activeTab === 'moments') {
       await renderMoments(el);
     } else if (activeTab === 'prefs') {
+      const likesText = friend.likes || friend.preferences || '';
+      const likesList = likesText ? likesText.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      const dislikesList = friend.dislikes ? friend.dislikes.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
       el.innerHTML = `
         <div style="padding:16px;">
-          <div style="margin-bottom:16px;">
-            <div style="font-weight:600;margin-bottom:6px;color:var(--accent);">💚 喜爱</div>
-            <div style="white-space:pre-wrap;font-size:14px;line-height:1.6;">${YB.esc(friend.likes || friend.preferences || '（还没记录）')}</div>
+          <div style="background:rgba(195,141,158,0.08);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div style="font-weight:600;margin-bottom:12px;color:var(--accent);font-size:15px;">💚 喜爱</div>
+            ${likesList.length ? likesList.map(line => `
+              <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:14px;line-height:1.5;">
+                <span style="color:var(--accent);flex-shrink:0;margin-top:1px;">•</span>
+                <span>${YB.esc(line)}</span>
+              </div>
+            `).join('') : '<div style="color:var(--ink-light);font-size:14px;">（还没记录）</div>'}
           </div>
-          <div>
-            <div style="font-weight:600;margin-bottom:6px;color:var(--danger);">🚫 雷区</div>
-            <div style="white-space:pre-wrap;font-size:14px;line-height:1.6;">${YB.esc(friend.dislikes || '（还没记录）')}</div>
+          <div style="background:rgba(229,115,115,0.08);border-radius:12px;padding:16px;">
+            <div style="font-weight:600;margin-bottom:12px;color:var(--danger);font-size:15px;">🚫 雷区</div>
+            ${dislikesList.length ? dislikesList.map(line => `
+              <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:14px;line-height:1.5;">
+                <span style="color:var(--danger);flex-shrink:0;margin-top:1px;">•</span>
+                <span>${YB.esc(line)}</span>
+              </div>
+            `).join('') : '<div style="color:var(--ink-light);font-size:14px;">（还没记录）</div>'}
           </div>
         </div>
       `;
@@ -262,5 +276,40 @@ const FriendDetail = (() => {
     App.navigate('form', { friend, from: 'detail', id: friend.id });
   }
 
-  return { render, edit };
+  function editPrefs() {
+    const mask = document.createElement('div');
+    mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;display:flex;align-items:flex-end;';
+    mask.innerHTML = `
+      <div style="width:100%;background:var(--paper);border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;">
+        <div style="font-size:16px;font-weight:600;text-align:center;margin-bottom:20px;">编辑偏好</div>
+        <div class="form-group" style="margin:0 0 16px 0;">
+          <label style="display:block;font-size:13px;color:var(--ink-light);margin-bottom:6px;">💚 喜爱（口味、爱好、喜欢的礼物类型）</label>
+          <textarea id="prefLikes" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:14px;min-height:100px;resize:vertical;">${YB.esc(friend.likes || friend.preferences || '')}</textarea>
+        </div>
+        <div class="form-group" style="margin:0 0 20px 0;">
+          <label style="display:block;font-size:13px;color:var(--ink-light);margin-bottom:6px;">🚫 雷区（别送什么、别聊什么）</label>
+          <textarea id="prefDislikes" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:14px;min-height:100px;resize:vertical;">${YB.esc(friend.dislikes || '')}</textarea>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn ghost block" id="prefCancel">取消</button>
+          <button class="btn block" id="prefSave">保存</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(mask);
+
+    mask.addEventListener('click', (e) => { if (e.target === mask) mask.remove(); });
+    mask.querySelector('#prefCancel').addEventListener('click', () => mask.remove());
+
+    mask.querySelector('#prefSave').addEventListener('click', async () => {
+      friend.likes = mask.querySelector('#prefLikes').value.trim();
+      friend.dislikes = mask.querySelector('#prefDislikes').value.trim();
+      friend.updated_at = YB.nowISO();
+      await DB.put('friends', friend);
+      mask.remove();
+      render(document.getElementById('app'), friend.id, currentOnBack);
+    });
+  }
+
+  return { render, edit, editPrefs };
 })();

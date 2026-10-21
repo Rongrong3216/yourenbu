@@ -9,9 +9,9 @@ const GiftForm = (() => {
       <div class="modal-sheet">
         <h3>${isEdit ? '编辑' : '记一笔'}送礼 · ${YB.esc(friend.nickname || friend.name)}</h3>
         <div class="form-group"><label>日期</label><input type="date" id="gDate" value="${isEdit ? editItem.date : YB.todayStr()}"></div>
-        <div class="form-group"><label>送了什么 *</label><input id="gName" placeholder="比如：香水" value="${isEdit ? YB.esc(editItem.gift_name) : ''}"></div>
-        <div class="form-group"><label>花费</label><input type="number" id="gCost" placeholder="可选" value="${isEdit && editItem.cost ? editItem.cost : ''}"></div>
-        <div class="form-group"><label>对方反应</label><input id="gReaction" placeholder="可选" value="${isEdit ? YB.esc(editItem.reaction || '') : ''}"></div>
+        <div class="form-group"><label>送了什么 *</label><input id="gName" value="${isEdit ? YB.esc(editItem.gift_name) : ''}"></div>
+        <div class="form-group"><label>花费</label><input type="number" id="gCost" value="${isEdit && editItem.cost ? editItem.cost : ''}"></div>
+        <div class="form-group"><label>对方反应</label><input id="gReaction" value="${isEdit ? YB.esc(editItem.reaction || '') : ''}"></div>
         <div style="display:flex;gap:12px;margin-top:16px;">
           <button class="btn ghost block" id="gCancel">取消</button>
           <button class="btn block" id="gSave">保存</button>
