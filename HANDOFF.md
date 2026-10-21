@@ -34,6 +34,7 @@ python -m http.server 8765
 
 电脑端：浏览器打开 `http://127.0.0.1:8765`
 手机端：和电脑连同一 WiFi，访问 `http://<电脑局域网IP>:8765`
+
 - 查电脑 IP：`Get-NetIPAddress -AddressFamily IPv4 | ? {$_.InterfaceAlias -notlike "*Loopback*" -and $_.IPAddress -like "192.168.*"}`
 - 注意：IP 经常变，每次重启手机连不上先查 IP
 
@@ -81,6 +82,7 @@ python -m http.server 8765
 ## 七、数据结构
 
 ### friends
+
 ```js
 {
   id: 'f_xxx',
@@ -104,6 +106,7 @@ python -m http.server 8765
 ```
 
 ### moments（点滴）
+
 ```js
 {
   id: 'm_xxx',
@@ -118,6 +121,7 @@ python -m http.server 8765
 ```
 
 ### gifts
+
 ```js
 {
   id: 'g_xxx',
@@ -129,6 +133,7 @@ python -m http.server 8765
 ```
 
 ### meta（key-value）
+
 - `dav_url` / `dav_username` / `dav_password` / `dav_enabled`：坚果云配置
 - `last_sync_at`：上次同步时间
 - `pinHash`：锁屏密码 hash
@@ -181,7 +186,6 @@ python -m http.server 8765
 ## 十一、用户偏好与约束
 
 - **不要擅自打 git tag / 保存版本**，每次改完要先问用户是否保存
-- **用户不喜欢宝鸡相关话题**
 - 用户在江苏徐州，手机测试用 Edge，夸克缓存问题多
 - 用户是汉语言文学专业出身，在做这个 PWA 副业项目，不熟悉前端工程化
 - 改 UI 要一步一步来，每次改一个小功能让用户手机上看效果
@@ -191,6 +195,7 @@ python -m http.server 8765
 ## 十二、下一步待办
 
 ### 紧急（朋友要测评前）
+
 1. **部署到 GitHub Pages**
    - GitHub 账号：Rongrong3126
    - 仓库名建议：yourenbu
@@ -199,24 +204,26 @@ python -m http.server 8765
 2. **解决坚果云 CORS**（可选）：用 Vercel Serverless 做代理
 
 ### 中期
+
 3. 以后加账号系统（倾向 Supabase，自带用户+数据库）
 4. 朋友测评后收集反馈迭代
 
 ### 长期
+
 5. 考虑用 PWABuilder 打包成安卓 apk
 
 ## 十三、关键文件速查
 
-| 要改什么 | 改哪个文件 |
-|---|---|
-| 首页卡片 | js/card.js, js/home.js |
-| 朋友档案 | js/friend-detail.js |
-| 记一笔弹窗 | js/quick-note.js |
-| 设置页 | js/settings.js |
-| 全屏日历 | js/full-calendar.js |
-| 朋友表单 | js/friend-form.js |
-| 全局样式 | css/main.css |
-| PWA 缓存版本 | sw.js 第3行 CACHE |
-| 同步配置 | js/webdav.js, js/sync.js |
-| 路由 | js/app.js |
-| 数据读写 | js/db.js |
+| 要改什么     | 改哪个文件                    |
+| -------- | ------------------------ |
+| 首页卡片     | js/card.js, js/home.js   |
+| 朋友档案     | js/friend-detail.js      |
+| 记一笔弹窗    | js/quick-note.js         |
+| 设置页      | js/settings.js           |
+| 全屏日历     | js/full-calendar.js      |
+| 朋友表单     | js/friend-form.js        |
+| 全局样式     | css/main.css             |
+| PWA 缓存版本 | sw.js 第3行 CACHE          |
+| 同步配置     | js/webdav.js, js/sync.js |
+| 路由       | js/app.js                |
+| 数据读写     | js/db.js                 |
